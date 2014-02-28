@@ -1,0 +1,273 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ufwb version="1.1.6.23">
+    <grammar name="OPD" start="id:4" author="Brent Townshend">
+        <description>Grammar for iCycler Data Files</description>
+        <structure name="Wells" id="5" encoding="ISO_8859-1:1987" endian="little" signed="no">
+            <structure name="WIRT" id="6" length="16" repeatmax="count">
+                <string name="wirt" mustmatch="yes" id="7" type="fixed-length" length="4" encoding="ISO_8859-1:1987">
+                    <fixedvalue name="Magic" value="WIRT"/>
+                </string>
+                <binary name="&lt;Binary Fill Bytes&gt;" id="8" unused="yes" length="4"/>
+                <number name="platepos" id="9" type="integer" length="2" minval="0" maxval="95"/>
+                <number name="numlayers" id="10" type="integer" length="2" minval="1"/>
+                <number name="wsrt_offset" id="11" type="integer" length="4" display="hex"/>
+            </structure>
+            <structure name="WSRT" id="13" length="48" repeatmax="-1">
+                <string name="wsrt" mustmatch="yes" id="14" type="fixed-length" length="4" encoding="ISO_8859-1:1987">
+                    <fixedvalue name="Magic" value="WSRT"/>
+                </string>
+                <string name="name" id="15" type="fixed-length" length="20"/>
+                <number name="sampnum" id="16" type="integer" length="2"/>
+                <number name="concentration" id="17" type="float" length="8"/>
+                <number name="v2" id="18" type="integer" length="2"/>
+                <binary name="fill2" id="19" length="2"/>
+                <number name="v2b" id="20" type="integer" length="2" display="hex">
+                    <mask name="Blank" value="0x100">
+                        <fixedvalue name="Blank" value="0x100"/>
+                    </mask>
+                    <mask name="+ctl" value="0x2000">
+                        <fixedvalue name="+ctl" value="0x1000"/>
+                    </mask>
+                    <mask name="-ctl" value="0x1000">
+                        <fixedvalue name="-ctl" value="0x1000"/>
+                    </mask>
+                </number>
+                <number name="v3" id="21" type="integer" length="2"/>
+                <number name="dye" id="22" type="integer" length="2"/>
+                <binary name="fill3" id="23" unused="yes" length="2"/>
+                <number name="wellnum" id="24" type="integer" length="2"/>
+            </structure>
+        </structure>
+        <structure name="OPD" id="4" encoding="ISO_8859-1:1987" endian="little" signed="no">
+            <structure name="TCOD" id="27">
+                <string name="tcod" mustmatch="yes" id="28" type="fixed-length" length="4" encoding="ISO_8859-1:1987">
+                    <fixedvalue name="Magic" value="TCOD"/>
+                </string>
+                <string name="version" id="29" type="fixed-length" length="5"/>
+                <string name="user" id="30" type="fixed-length" length="25" encoding="ISO_8859-1:1987"/>
+                <string name="notes" id="31" type="fixed-length" length="800"/>
+                <structure name="FilterSet" id="32" length="288">
+                    <number name="id" id="33" type="integer" length="4"/>
+                    <string name="Name" id="34" type="fixed-length" length="20"/>
+                    <structure name="Excitation" id="35" length="22" repeatmin="6" repeatmax="6">
+                        <string name="Desc" id="36" type="fixed-length" length="20" encoding="ISO_8859-1:1987"/>
+                        <number name="Index" id="37" type="integer" length="2"/>
+                    </structure>
+                    <structure name="Emission" id="218" length="22" repeatmin="6" repeatmax="6">
+                        <string name="Desc" id="220" type="fixed-length" length="20"/>
+                        <number name="Index" id="221" type="integer" length="2"/>
+                    </structure>
+                </structure>
+                <binary name="fill" mustmatch="yes" id="40" length="2">
+                    <fixedvalue name="zeroes" value="0000"/>
+                </binary>
+                <number name="numdyes" id="41" type="integer" length="4"/>
+                <binary name="fill1" id="42" unused="yes" length="2">
+                    <fixedvalue name="empty" value="00"/>
+                </binary>
+                <number name="nsamples" id="43" type="integer" length="2"/>
+                <binary name="fill2" id="44" length="6"/>
+                <string name="Protocol" id="45" type="fixed-length" length="260" encoding="ISO_8859-1:1987"/>
+                <string name="PlateLayout" id="46" type="fixed-length" length="260" encoding="ISO_8859-1:1987"/>
+            </structure>
+            <structure name="TCPS" id="48">
+                <string name="TCPS" mustmatch="yes" id="49" type="fixed-length" length="4">
+                    <fixedvalue name="Magic" value="TCPS"/>
+                </string>
+                <string name="version" id="50" type="fixed-length" length="5" encoding="ISO_8859-1:1987"/>
+                <binary name="fill1" id="51" unused="yes" length="2"/>
+                <number name="v1" id="52" type="integer" length="2"/>
+                <string name="user1" id="53" type="fixed-length" length="825" encoding="ISO_8859-1:1987"/>
+                <number name="v2" id="54" type="integer" length="2"/>
+                <binary name="fill2" id="55" unused="yes" length="6"/>
+                <number name="numdyes" id="56" type="integer" length="2"/>
+                <binary name="fill3" id="57" length="6"/>
+                <number name="count" id="58" type="integer" length="2"/>
+                <binary name="fill4" id="59" length="6"/>
+                <string name="version2" id="60" type="fixed-length" length="5" encoding="ISO_8859-1:1987"/>
+                <binary name="fill5" id="61" unused="yes" length="1000"/>
+                <number name="v4" id="62" repeatmax="2" type="integer" length="2"/>
+                <number name="sWFThreshTrigger" id="63" type="float" length="4"/>
+                <number name="sWFTBoost" id="64" type="float" length="4"/>
+                <number name="sWFTElim" id="65" type="float" length="4"/>
+                <binary name="fill6" id="66" unused="yes" length="5"/>
+                <number name="timestamp" id="67" type="integer" length="4"/>
+                <binary name="fill7" id="68" unused="yes" length="14"/>
+                <number name="v9" id="69" type="integer" length="2"/>
+                <binary name="fill7b" id="70" length="2"/>
+                <number name="volume" id="71" type="float" length="4"/>
+                <binary name="fill7c" id="72" length="8"/>
+                <string name="version3" id="73" type="fixed-length" length="5" encoding="ISO_8859-1:1987"/>
+                <number name="v10" id="74" type="integer" length="2"/>
+                <binary name="fill8" id="75" unused="yes" length="8"/>
+                <string name="version4" id="76" type="fixed-length" length="8"/>
+                <binary name="fill8b" id="77" length="2"/>
+                <string name="user2" id="78" type="fixed-length" length="825" encoding="ISO_8859-1:1987"/>
+                <number name="v11" id="79" type="integer" length="2"/>
+                <binary name="fill8c" id="80" length="4"/>
+                <number name="nsteps" id="81" type="integer" length="2"/>
+                <binary name="fill9" id="82" unused="yes" length="30"/>
+                <string name="version5" id="83" type="fixed-length" length="5" encoding="ISO_8859-1:1987"/>
+                <string name="user3" id="84" type="fixed-length" length="25" encoding="ISO_8859-1:1987"/>
+                <binary name="fill10" id="85" unused="yes" length="1105"/>
+                <structure name="layerdata" id="86" length="12" repeatmin="numdyes" repeatmax="numdyes">
+                    <number name="v1" id="87" repeatmax="2" type="integer" length="4"/>
+                    <number name="v2" id="88" type="integer" length="4" signed="yes"/>
+                </structure>
+            </structure>
+            <structref name="Wells" id="91" structure="id:5"/>
+            <structure name="Spectral" id="92" repeatmin="0">
+                <structure name="Sample" id="93" repeat="id:43" repeatmin="nsamples" repeatmax="nsamples">
+                    <structure name="hdr" id="94" length="84">
+                        <number name="bias" id="95" type="integer" length="2"/>
+                        <number name="exposure" id="96" type="integer" length="2">
+                            <fixedvalue name="10ms" value="0"/>
+                            <fixedvalue name="20ms" value="1"/>
+                            <fixedvalue name="40ms" value="2"/>
+                            <fixedvalue name="80ms" value="3"/>
+                            <fixedvalue name="160ms" value="4"/>
+                            <fixedvalue name="320ms" value="5"/>
+                            <fixedvalue name="640ms" value="6"/>
+                            <fixedvalue name="1280ms" value="7"/>
+                        </number>
+                        <number name="v1" id="97" type="float" length="4"/>
+                        <number name="i3" id="98" type="integer" length="2"/>
+                        <number name="numwells" id="99" type="integer" length="2"/>
+                        <number name="measnum" id="100" type="integer" length="2">
+                            <description>Measurement number.  May not be incremented if a measurement is bad (overexposed).</description>
+                        </number>
+                        <number name="i4" id="101" repeatmax="8" type="integer" length="2"/>
+                        <number name="stage" id="102" type="integer" length="2"/>
+                        <number name="step" id="103" type="integer" length="2"/>
+                        <number name="rep" id="104" type="integer" length="2"/>
+                        <number name="temp1" id="105" type="float" length="4"/>
+                        <number name="dwellTime" id="106" type="integer" length="2"/>
+                        <number name="dwellTimeRemaining" id="107" type="integer" length="2"/>
+                        <number name="temperature" id="108" repeatmax="4" type="float" length="4"/>
+                        <number name="filter1" id="109" type="integer" length="2"/>
+                        <number name="filter2" id="110" type="integer" length="2"/>
+                        <number name="measindex" id="111" type="integer" length="2"/>
+                        <binary name="fill" id="112" length="2"/>
+                        <number name="time" id="113" type="float" length="8"/>
+                        <number name="validFlag" id="114" type="integer" length="2"/>
+                        <binary name="fill2" id="115" length="6"/>
+                    </structure>
+                    <structure name="Data" id="117" length="12" repeatmin="count" repeatmax="count" strokecolor="8F1B25" fillcolor="00FB43">
+                        <number name="well" id="118" type="integer" length="2"/>
+                        <number name="v" id="119" repeatmax="2" type="float" length="4"/>
+                        <number name="clipped" id="120" type="integer" length="2"/>
+                    </structure>
+                </structure>
+            </structure>
+            <structure name="PureDyes" id="124">
+                <structure name="Dye" id="125" repeatmax="2">
+                    <string name="rmel" mustmatch="yes" id="126" type="fixed-length" length="4">
+                        <fixedvalue name="Magic" value="RMEL"/>
+                    </string>
+                    <string name="name" id="127" type="fixed-length" length="20" encoding="ISO_8859-1:1987"/>
+                    <number name="numfilters" id="128" type="integer" length="4"/>
+                    <number name="i2" id="129" type="integer" length="2"/>
+                    <binary name="Filler" id="130" length="12"/>
+                    <structure name="RMEF" id="131" length="68" repeatmax="numfilters">
+                        <string name="rmef" mustmatch="yes" id="132" type="fixed-length" length="4">
+                            <fixedvalue name="Magic" value="RMEF"/>
+                        </string>
+                        <string name="excitation" id="133" type="fixed-length" length="20" encoding="ISO_8859-1:1987"/>
+                        <string name="emission" id="134" type="fixed-length" length="20"/>
+                        <number name="response" id="135" type="float" length="8"/>
+                    </structure>
+                </structure>
+            </structure>
+            <structure name="WellFactors" id="139" debug="yes">
+                <structure name="WFFR" id="140" length="52">
+                    <string name="wffr" mustmatch="yes" id="141" type="fixed-length" length="4" encoding="ISO_8859-1:1987">
+                        <fixedvalue name="Magic" value="WFFR"/>
+                    </string>
+                    <number name="v1" id="142" repeatmax="3" type="integer" length="2"/>
+                    <number name="v2" id="143" type="float" length="4"/>
+                </structure>
+                <structure name="WFFP" id="145" repeatmax="2">
+                    <string name="wffp" mustmatch="yes" id="146" type="fixed-length" length="4" encoding="ISO_8859-1:1987">
+                        <fixedvalue name="Magic" value="WFFP"/>
+                    </string>
+                    <number name="i1" id="147" type="integer" length="2"/>
+                    <binary name="&lt;Binary Fill Bytes&gt;" id="148" unused="yes" length="2"/>
+                    <string name="dye" id="149" type="fixed-length" length="20" encoding="ISO_8859-1:1987"/>
+                    <string name="excitation" id="150" type="fixed-length" length="20" encoding="ISO_8859-1:1987"/>
+                    <string name="emission" id="151" type="fixed-length" length="20" encoding="ISO_8859-1:1987"/>
+                    <number name="cnt" id="152" type="integer" length="2"/>
+                    <binary name="&lt;Binary Fill Bytes-1&gt;" id="153" unused="yes" length="40"/>
+                    <number name="val" id="154" repeatmin="cnt" repeatmax="cnt" type="float" length="4"/>
+                </structure>
+            </structure>
+            <structure name="PIFB" id="157" repeatmin="0">
+                <string name="pifb" mustmatch="yes" id="158" type="fixed-length" length="4" encoding="ISO_8859-1:1987">
+                    <fixedvalue name="Magic" value="PIFB"/>
+                </string>
+                <string name="version" id="159" repeatmin="5" repeatmax="5" type="fixed-length" length="25" encoding="ISO_8859-1:1987"/>
+                <binary name="&lt;Binary Fill Bytes-4&gt;" id="160" unused="yes" length="100"/>
+                <string name="compName" id="161" type="fixed-length" length="15" encoding="ISO_8859-1:1987"/>
+                <binary name="&lt;Binary Fill Bytes-5&gt;" id="162" unused="yes" length="100"/>
+                <number name="windowsVersion" id="163" repeatmax="4" type="integer" length="4"/>
+                <string name="servicepack" id="164" type="fixed-length" length="14" encoding="ISO_8859-1:1987"/>
+                <binary name="&lt;Binary Fill Bytes-5&gt;-1" id="165" length="218"/>
+                <number name="v" id="166" repeatmax="6" type="integer" length="4"/>
+                <binary name="&lt;Binary Fill Bytes-5&gt;-1-1" id="167" length="100"/>
+                <string name="location" id="168" type="fixed-length" length="256" encoding="ISO_8859-1:1987"/>
+                <binary name="&lt;Binary Fill Bytes-6&gt;" id="169" unused="yes" length="400"/>
+                <string name="labels" id="170" repeatmax="9" type="fixed-length" length="25" encoding="ISO_8859-1:1987"/>
+                <structure name="step" id="171" length="32" repeatmax="nsteps">
+                    <number name="cycle" id="172" type="integer" length="4"/>
+                    <number name="repeat" id="173" type="integer" length="2"/>
+                    <number name="step" id="174" type="integer" length="2"/>
+                    <number name="v2" id="175" repeatmin="2" repeatmax="2" type="integer" length="2" display="hex"/>
+                    <number name="duration" id="176" type="integer" length="2" signed="yes"/>
+                    <number name="temperature" id="177" type="float" length="4"/>
+                    <number name="gradient" id="178" type="float" length="32" lengthunit="bit"/>
+                    <number name="i3" id="179" repeatmax="5" type="integer" length="2" display="hex"/>
+                </structure>
+                <number name="i2" id="181" repeatmax="2" type="integer" length="2"/>
+                <number name="v1" id="182" type="float" length="64" lengthunit="bit"/>
+                <number name="v2" id="183" type="float" length="64" lengthunit="bit"/>
+                <number name="i3" id="184" repeatmax="2" type="integer" length="2"/>
+            </structure>
+            <structure name="Layout" id="186" repeatmin="0" repeatmax="2">
+                <description>Position on plate starting (A1=0,A12=11, B1=12, ...,H12=95)</description>
+                <structure name="UDLP" id="187" length="0">
+                    <string name="udlp" mustmatch="yes" id="188" type="fixed-length" length="4" encoding="ISO_8859-1:1987">
+                        <fixedvalue name="Magic" value="UDLP"/>
+                    </string>
+                    <number name="layer" id="189" type="integer" length="4"/>
+                    <number name="cnt1" id="190" type="integer" length="2"/>
+                    <number name="cnt2" id="191" type="integer" length="2"/>
+                    <number name="enabledwells1" id="192" repeatmax="cnt1" type="integer" length="2"/>
+                    <number name="enabledwells2" id="193" repeatmax="cnt2" type="integer" length="2"/>
+                    <number name="i1" id="194" repeatmax="6" type="integer" length="4"/>
+                    <number name="i2" id="195" type="integer" length="2"/>
+                    <number name="i3" id="196" type="integer" length="2"/>
+                    <number name="v1" id="197" type="float" length="8"/>
+                    <number name="v2" id="198" type="float" length="8"/>
+                </structure>
+                <structure name="TCCP" id="200">
+                    <string name="tccp" mustmatch="yes" id="201" type="fixed-length" length="4" encoding="ISO_8859-1:1987">
+                        <fixedvalue name="Magic" value="TCCP"/>
+                    </string>
+                    <number name="i1" id="202" repeatmax="8" type="integer" length="2"/>
+                    <binary name="fill1" id="203" length="6"/>
+                    <number name="i2" id="204" repeatmax="4" type="integer" length="2"/>
+                    <binary name="fill2" id="205" length="26"/>
+                    <number name="i3" id="206" repeatmax="3" type="integer" length="2"/>
+                    <binary name="fill3" id="207" length="70"/>
+                </structure>
+            </structure>
+            <structure name="PSPRE" id="210" length="0" repeatmin="0">
+                <string name="name" mustmatch="yes" id="211" type="fixed-length" length="4" encoding="ISO_8859-1:1987">
+                    <fixedvalue name="Magic" value="PSPR"/>
+                </string>
+                <string name="e" id="212" type="fixed-length" length="1"/>
+                <number name="numwirt" id="213" type="integer" length="4"/>
+                <structref name="Wells" id="214" repeatmin="0" structure="id:5"/>
+            </structure>
+        </structure>
+    </grammar>
+</ufwb>
