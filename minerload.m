@@ -1,9 +1,14 @@
 function [r,z]=minerload(job,s)
 if nargin<2
-  if strncmp(job,'file://',7)
-    s=urlread(job);
-  else
+  if job(1)>='0' && job(1)<='9'
     s=urlread(sprintf('http://ewindup.info/miner/Results/Miner_%s_Analyzed_Data.txt',job));
+  else
+    fd=fopen(job,'r');
+    if fd==-1
+      error('Unable to open %s for reading\n', job);
+    end
+    s=fread(fd,inf,'*char')';
+    fclose(fd);
   end
 end
 line=1;
