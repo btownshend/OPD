@@ -15,6 +15,7 @@ line=1;
 z={};
 while ~isempty(s)
   [tok,s]=strtok(s,10);
+  tok=tok(tok~=13);   % Remove cr
   cnt=1;
   while ~isempty(tok)
     [elem,tok]=strtok(tok,9);
