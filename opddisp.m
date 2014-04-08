@@ -24,7 +24,7 @@ elseif length(x)>1 && ~ischar(x)
   if length(x)>maxdisp
     fprintf('%s[%d..%d] ...\n',pf(prefix),maxdisp+1,length(x));
   end
-elseif isstruct(x)
+elseif isstruct(x) || isobject(x)
   f=fieldnames(x);
   for i=1:length(f)
     opddisp(x.(f{i}),[prefix,'.',f{i}],maxdisp);
@@ -33,7 +33,7 @@ else
   fprintf('%s:\t',pf(prefix));
   if isfloat(x)
     fprintf('%f ',x);
-  elseif isinteger(x)
+  elseif isinteger(x) || islogical(x)
     fprintf('%d ',x);
   elseif ischar(x)
     fprintf('"%s" ',x);
