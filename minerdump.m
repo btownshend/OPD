@@ -11,7 +11,7 @@ for ii=1:length(sampsel)
   i=sampsel(ii);
   pos=v.WIRT(i).platepos;
   wellnames{i}=sprintf('%c%d',floor(double(pos)/12)+'A',mod(pos,12)+1);
-  if i<length(sampsel)
+  if ii<length(sampsel)
     fprintf('%s\t',wellnames{i});
   else
     fprintf('%s\n',wellnames{i});
