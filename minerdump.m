@@ -20,7 +20,7 @@ end
 
 sc=v.avg.scaled(:,:,sampsel);
 for i=1:size(sc,1)
-  fprintf('%f\t',v.avg.cycle(i));
+  fprintf('%f\t',v.avg.cycle(i)+0.63);
   for j=1:size(sc,3)-1
     fprintf('%f\t',sc(i,1,j));    
   end
