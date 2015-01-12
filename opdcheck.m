@@ -1,6 +1,5 @@
 % Check out OPD data to see if it makes sense
 function opdcheck(v,samps)
-clf;
 for i=1:length(v.WIRT)
   pos=v.WIRT(i).platepos;
   wellnames{i}=sprintf('%c%d',floor(double(pos)/12)+'A',mod(pos,12)+1);
@@ -17,8 +16,10 @@ for stage=1:length(v.stageavg)
   delta=(avg.temp(end)-avg.temp(1))>1;
   for dye=1:size(avg.scaled,2)
     s=squeeze(avg.scaled(:,dye,sampsel));
-    subplot(length(v.stageavg),size(avg.scaled,2),pnum);
-    pnum=pnum+1;
+    if length(v.stageavg)>1 || size(avg.scaled,2)>1
+      subplot(length(v.stageavg),size(avg.scaled,2),pnum);
+      pnum=pnum+1;
+    end
     if 0 && stage==1 && size(s,1)>10
       % Subtract out baseline
       for k=1:size(s,2)
