@@ -62,7 +62,7 @@ if args.doplot
   end
   w=wellnames(opd);
   if ~isempty(args.samps)
-    w=w{args.samps};
+    w=w(args.samps);
   end
   % if length(w)==length(ct)
   %   for i=1:length(ct)
