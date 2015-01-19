@@ -1,13 +1,16 @@
 % Check out OPD data to see if it makes sense
-for i=1:length(v.WIRT)
-  pos=v.WIRT(i).platepos;
-  wellnames{i}=sprintf('%c%d',floor(double(pos)/12)+'A',mod(pos,12)+1);
-end
 function opdcheck(v,samps,varargin)
 defaults=struct('firststage',false);
 args=processargs(defaults,varargin);
+wellnms=wellnames(v);
 if nargin<2
-  sampsel=1:length(v.WIRT)
+  sampsel=1:length(v.WIRT);
+elseif iscell(samps)
+  w=[];
+  for i=1:length(samps)
+    w(end+1)=find(strcmp(samps{i},wellnms));
+  end
+  sampsel=w;
 else
   sampsel=ismember([v.WIRT.platepos],samps);
 end
@@ -47,8 +50,8 @@ for stage=1:length(v.stageavg)
     end
     title(sprintf('%s - %s',v.filename,v.WFFP(dye).dye));
     if stage==1
-      if nargin>=2 || length(wellnames)<20
-        legend(wellnames{sampsel},'Location','EastOutside');
+      if nargin>=2 || length(wellnms)<20
+        legend(wellnms{sampsel},'Location','EastOutside');
       end
     end
   end
