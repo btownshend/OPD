@@ -1,9 +1,11 @@
 % Check out OPD data to see if it makes sense
-function opdcheck(v,samps)
 for i=1:length(v.WIRT)
   pos=v.WIRT(i).platepos;
   wellnames{i}=sprintf('%c%d',floor(double(pos)/12)+'A',mod(pos,12)+1);
 end
+function opdcheck(v,samps,varargin)
+defaults=struct('firststage',false);
+args=processargs(defaults,varargin);
 if nargin<2
   sampsel=1:length(v.WIRT)
 else
@@ -16,7 +18,7 @@ for stage=1:length(v.stageavg)
   delta=(avg.temp(end)-avg.temp(1))>1;
   for dye=1:size(avg.scaled,2)
     s=squeeze(avg.scaled(:,dye,sampsel));
-    if length(v.stageavg)>1 || size(avg.scaled,2)>1
+    if ~args.firststage && (length(v.stageavg)>1 || size(avg.scaled,2)>1)
       subplot(length(v.stageavg),size(avg.scaled,2),pnum);
       pnum=pnum+1;
     end
@@ -49,5 +51,8 @@ for stage=1:length(v.stageavg)
         legend(wellnames{sampsel},'Location','EastOutside');
       end
     end
+  end
+  if args.firststage
+    break;
   end
 end
