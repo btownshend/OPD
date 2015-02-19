@@ -1,11 +1,8 @@
   % locate file
 function file=opdlocate()
-  dname='/Volumes/data-1/Brent';
+  dname='/Volumes/smolke-lab$/Brent';
   if ~exist(dname,'dir')
-    dname='/Volumes/data/Brent';
-    if ~exist(dname,'dir')
-      error('Smolke server not mounted\n');
-    end
+    error('Smolke server not mounted\n');
   end
   d=dir([dname,'/Data*']);
   if length(d)<1
