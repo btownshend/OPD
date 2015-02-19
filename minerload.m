@@ -34,7 +34,11 @@ for i=1:size(z,1)
     v=strrep(v,'Error!','NaN');
     vv=[];
     for k=1:length(v)
-      vv(k)=str2num(v{k});
+      if strcmp(v{k},'-1.#IND')
+        vv(k)=nan;
+      else
+        vv(k)=str2num(v{k});
+      end
     end
     r.(field)=vv;
   else
