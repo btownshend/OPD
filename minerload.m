@@ -45,3 +45,15 @@ for i=1:size(z,1)
   end
 end
 r.job=job;
+
+% Create a full grid version of ct
+w=r.SampleNames;
+opd.ctgrid=nan(8,12);
+for j='A':'H'
+  for i=1:12
+    ind=find(strcmp(w,sprintf('%c%d',j,i)));
+    if ~isempty(ind)
+      r.ctgrid(j-'A'+1,i)=r.CT(ind);
+    end
+  end
+end
