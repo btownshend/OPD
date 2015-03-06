@@ -46,6 +46,7 @@ for dye=1:size(v.all.scaled,2)
   end
   % Compute slope of curve over 58-68C range (fluor efficiency loss)
   effsel=ut>=60 & ut<=68;
+  effsel=[1,2,length(ut)-1,length(ut)];
   for k=1:size(s,2)
     pfit=polyfit(ut(effsel),sf(effsel,k)',1);
     loss=polyval(pfit,ut)';
