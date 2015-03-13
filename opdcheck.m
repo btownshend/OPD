@@ -8,7 +8,10 @@ if nargin<2
 elseif iscell(samps)
   w=[];
   for i=1:length(samps)
-    w(end+1)=find(strcmp(samps{i},wellnms));
+    f=find(strcmp(samps{i},wellnms));
+    if ~isempty(f)
+      w(end+1)=f;
+    end
   end
   sampsel=w;
 else
