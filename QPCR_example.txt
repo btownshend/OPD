@@ -1,0 +1,194 @@
+>> md=minerload()
+
+md = 
+
+                     SampleNames: {1x96 cell}
+                      Logistic_a: [1x96 double]
+                      Logistic_b: [1x96 double]
+                     Logistic_X0: [1x96 double]
+                     Logistic_Y0: [1x96 double]
+                 Logistic_Pvalue: [1x96 double]
+                      Noise_SPE_: [1x96 double]
+              EndofExpPhase_SDM_: [1x96 double]
+                         CP_SPE_: [1x96 double]
+                         CP_SDM_: [1x96 double]
+                DynamicThreshold: [1x96 double]
+                LowerCycleNumber: [1x96 double]
+                UpperCycleNumber: [1x96 double]
+             PointsForRegression: [1x96 double]
+      Number_OfRegressionWindows: [1x96 double]
+        WeightedAverage_OfPvalue: [1x96 double]
+         Stderr_OfWeightedPvalue: [1x96 double]
+    WeightedAverage_OfEfficiency: [1x96 double]
+     Stderr_OfWeightedEfficiency: [1x96 double]
+                              CT: [1x96 double]
+                             job: 'Miner_1267276184_764917_Analyzed_Data.txt'
+                          ctgrid: [8x12 double]
+
+>> md.ctgrid
+
+ans =
+
+  Columns 1 through 10
+
+       NaN   20.5236       NaN   18.4456   23.0764   13.7550   20.7276   23.1499   17.1081   22.3916
+    9.3126   17.4980    9.0190   14.0518   22.7897   13.4265   12.0450   15.1272   19.4001   17.5017
+   12.1450   22.6637       NaN   19.6596   22.6771   12.4785   21.3051   22.9078   19.2430   21.1419
+   11.3506   20.1624    9.6989   15.7955   23.5032   13.0118   12.1987   14.9493   15.6721   21.9409
+   17.8748   22.3625       NaN   20.0115    8.3143   20.0338   19.9285   19.3465   17.6915   17.5224
+   13.6660   21.9240    9.3762   17.6611    9.1567   18.5772   14.3502   15.3315   17.8558   21.1332
+   19.3352   22.6654   11.8714   23.0039   10.1038   22.6343   22.2184   19.1954   14.0451   17.5142
+   15.1185   22.4576   11.2298   20.1595    8.9177   20.6168   13.0808   20.8256   16.1112   15.3267
+
+  Columns 11 through 12
+
+   15.5883   24.4816
+   12.5550   26.3951
+   11.1276       NaN
+   10.2916       NaN
+   16.7140       NaN
+   14.0879       NaN
+   14.4337       NaN
+   23.5199       NaN
+
+>> q=QPCR(md.ctgrid);
+>> q.addref('MX','A1:H1',2^-(0:7));
+Error using  ^ 
+Inputs must be a scalar and a square matrix.
+To compute elementwise POWER, use POWER (.^) instead.
+ 
+>> q.addref('MX','A1:H1',2.^-(0:7));
+Primer MX model:  efficiency=1.77, Conc(Ct=10)=0.6nM, Conc(Ct=0)=1.9e+02nM
+>> q.plot()
+No non-reference data points for MX to plot
+>> figure(gcf)
+>> close all
+>> q.plot()
+No non-reference data points for MX to plot
+>> q.getconc('MX','B2');
+>> q.getconc('MX','B2')
+
+ans =
+
+    0.0194
+
+>> q.plot()
+>> q.getconc('MX','B2:H2')
+
+ans =
+
+    0.0194    0.0022    0.0070    0.0024    0.0027    0.0022    0.0024
+
+>> q.plot()
+
+
+>> q
+
+q = 
+
+  QPCR with properties:
+
+      options: [1x1 struct]
+    wellnames: {8x12 cell}
+       ctgrid: [8x12 double]
+      primers: {8x12 cell}
+         refs: [1x1 containers.Map]
+
+>> q.ctgrid
+
+ans =
+
+  Columns 1 through 10
+
+       NaN   20.5236       NaN   18.4456   23.0764   13.7550   20.7276   23.1499   17.1081   22.3916
+    9.3126   17.4980    9.0190   14.0518   22.7897   13.4265   12.0450   15.1272   19.4001   17.5017
+   12.1450   22.6637       NaN   19.6596   22.6771   12.4785   21.3051   22.9078   19.2430   21.1419
+   11.3506   20.1624    9.6989   15.7955   23.5032   13.0118   12.1987   14.9493   15.6721   21.9409
+   17.8748   22.3625       NaN   20.0115    8.3143   20.0338   19.9285   19.3465   17.6915   17.5224
+   13.6660   21.9240    9.3762   17.6611    9.1567   18.5772   14.3502   15.3315   17.8558   21.1332
+   19.3352   22.6654   11.8714   23.0039   10.1038   22.6343   22.2184   19.1954   14.0451   17.5142
+   15.1185   22.4576   11.2298   20.1595    8.9177   20.6168   13.0808   20.8256   16.1112   15.3267
+
+  Columns 11 through 12
+
+   15.5883   24.4816
+   12.5550   26.3951
+   11.1276       NaN
+   10.2916       NaN
+   16.7140       NaN
+   14.0879       NaN
+   14.4337       NaN
+   23.5199       NaN
+
+>> q.primers
+
+ans = 
+
+    'MX'      []    []    []    []    []    []    []    []    []    []    []
+    'MX'    'MX'    []    []    []    []    []    []    []    []    []    []
+    'MX'    'MX'    []    []    []    []    []    []    []    []    []    []
+    'MX'    'MX'    []    []    []    []    []    []    []    []    []    []
+    'MX'    'MX'    []    []    []    []    []    []    []    []    []    []
+    'MX'    'MX'    []    []    []    []    []    []    []    []    []    []
+    'MX'    'MX'    []    []    []    []    []    []    []    []    []    []
+    'MX'    'MX'    []    []    []    []    []    []    []    []    []    []
+
+>> q.refs
+
+ans = 
+
+  Map with properties:
+
+        Count: 1
+      KeyType: char
+    ValueType: any
+
+>> q.refs('MX')
+
+ans = 
+
+          name: 'MX'
+         wells: [1 2 3 4 5 6 7 8]
+     welldescr: 'A1:H1'
+            ct: [NaN 9.3126 12.1450 11.3506 17.8748 13.6660 19.3352 15.1185]
+         concs: [1 0.5000 0.2500 0.1250 0.0625 0.0312 0.0156 0.0078]
+    interpdata: [1x501 struct]
+         units: 'nM'
+           mdl: [1x1 struct]
+
+>> q.refs('MX').mdl
+
+ans = 
+
+          fit: [-1.7577 9.2413]
+    concrange: [0.0078 0.5000]
+          eff: 1.7664
+          ct0: 192.0235
+         ct10: 0.6494
+      ctnoise: 2.2558
+    deviation: [NaN -1.1471 0.4670 -1.5457 3.7601 -1.6670 2.7838 -2.6512]
+
+>> q.options
+
+ans = 
+
+     extrapolate: 1
+         ctnoise: 0.3000
+           nboot: 100
+              ci: 80
+    interpmethod: 'linear'
+        fitrange: [8 20]
+
+>> q2=QPCR('fitrange',[10,20]);
+Error using processargs (line 16)
+Unknown option: "
+"
+Valid options are:extrapolate ctnoise nboot ci interpmethod fitrange
+
+Error in QPCR (line 33)
+      obj.options=processargs(defaults,varargin);
+ 
+16      error(s);
+K>> dbquit
+>> q2=QPCR(md.ctgrid,'fitrange',[10,20]);
+>> 
