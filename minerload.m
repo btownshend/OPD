@@ -1,4 +1,11 @@
 function [r,z]=minerload(job,s)
+if nargin<1
+  files=dir('Miner_*.txt');
+  if length(files)~=1
+    error('Unable to locate a unique Miner_*.txt file');
+  end
+  job=files.name;
+end
 if nargin<2
   if job(1)>='0' && job(1)<='9'
     s=urlread(sprintf('http://ewindup.info/miner/Results/Miner_%s_Analyzed_Data.txt',job));
