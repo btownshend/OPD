@@ -19,7 +19,7 @@ fuexp=nan(size(fu));
 ct=nan(1,size(fu,2));
 emin=12; emax=12;
 for i=1:size(fu,2)
-  baseline=mean(fu(args.basecycles,i));
+  baseline=prctile(fu(args.basecycles,i),25);
   fu(:,i)=fu(:,i)-baseline;
   estart=find(fu(:,i)>fulow,1);
   if ~isempty(estart)
