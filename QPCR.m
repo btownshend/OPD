@@ -206,7 +206,7 @@ classdef QPCR < handle
       cihigh=reshape(cihigh,length(w1(:)),[])';
       range=max(conc)./min(conc);
       if any(range)>2
-        fprintf('Warning: Some concentrations vary by %.1fx between replicates over wells %s\n',max(range),sprintf('%s ',wells));
+        fprintf('Warning: Some concentrations vary by up to %.1fx between replicates over wells %s\n',max(range),sprintf('%s ',wells));
       end
       conc=reshape(mean(conc,1),size(w1));
       cilow=reshape(mean(cilow,1),size(w1));
