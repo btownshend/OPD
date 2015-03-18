@@ -56,10 +56,11 @@ classdef QPCR < handle
         wlist=wells;
       elseif iscell(wells)
         wlist=[];
-        for i=1:length(wells)
+        for i=1:length(wells(:))
           w=obj.parsewells(wells{i});
           wlist=[wlist,w];
         end
+        wlist=reshape(wlist,size(wells));
       elseif any(wells==',')
         % List
         comma=find(wells==',');
@@ -104,6 +105,7 @@ classdef QPCR < handle
       end
       refwlist=obj.parsewells(refwells);
       ct=obj.getct(refwells);
+      ct=ct(:);
       if length(ct)~=length(refconcs)
         error('addref: wells and refconcs must have same length\n');
       end
@@ -114,7 +116,7 @@ classdef QPCR < handle
       minconc=min(refconcs(ctsel));
       maxconc=max(refconcs(ctsel));
       concsel=refconcs>=minconc & refconcs<=maxconc & isfinite(ct);
-      obj.refs(primer)=struct('name',primer,'wells',refwlist,'welldescr',refwells,'ct',ct,'concs',refconcs,'interpdata',interpdata,'units',args.units);
+      obj.refs(primer)=struct('name',primer,'wells',refwlist,'welldescr',{refwells},'ct',ct,'concs',refconcs,'interpdata',interpdata,'units',args.units);
       if sum(concsel)>=2
         fit=polyfit(log(refconcs(concsel)),ct(concsel),1);
         if any(~isfinite(fit))
@@ -177,20 +179,20 @@ classdef QPCR < handle
     
     function [conc,cilow,cihigh]=getconc(obj,ref,rep1,rep2,rep3)
       w1=obj.parsewells(rep1);
-      wells=w1;
+      wells=w1(:);
       if nargin>3
         w2=obj.parsewells(rep2);
-        if length(w2)~=length(w1)
+        if any(size(w2)~=size(w1))
           error('Replicate lists must all have the same length');
         end
-        wells=[wells,w2];
+        wells=[wells,w2(:)];
       end
       if nargin>4
         w3=obj.parsewells(rep3);
-        if length(w3)~=length(w1)
+        if any(size(w3)~=size(w1))
           error('Replicate lists must all have the same length');
         end
-        wells=[wells,w3];
+        wells=[wells,w3(:)];
       end
       
       obj.setref(ref,wells); 	% Set it for error-checking and subsequent plotting
@@ -199,16 +201,16 @@ classdef QPCR < handle
       conc=interp1([refdata.interpdata.ct],[refdata.interpdata.conc],ct);
       cilow=interp1([refdata.interpdata.ct],[refdata.interpdata.cilow],ct);
       cihigh=interp1([refdata.interpdata.ct],[refdata.interpdata.cihigh],ct);
-      conc=reshape(conc,[],length(w1));
-      cilow=reshape(cilow,[],length(w1));
-      cihigh=reshape(cihigh,[],length(w1));
-      conc=mean(conc,1);
-      cilow=mean(cilow,1);
-      cihigh=mean(cihigh,1);
+      conc=reshape(conc,length(w1(:)),[])';
+      cilow=reshape(cilow,length(w1(:)),[])';
+      cihigh=reshape(cihigh,length(w1(:)),[])';
       range=max(conc)./min(conc);
       if any(range)>2
         fprintf('Warning: Some concentrations vary by %.1fx between replicates over wells %s\n',max(range),sprintf('%s ',wells));
       end
+      conc=reshape(mean(conc,1),size(w1));
+      cilow=reshape(mean(cilow,1),size(w1));
+      cihigh=reshape(mean(cihigh,1),size(w1));
     end
 
     function plot(obj)
@@ -277,7 +279,7 @@ classdef QPCR < handle
         fprintf('No non-reference data points for %s to plot\n', ref);
       else
         [mid,low,high]=obj.getconc(ref,sampwells);
-        sampdata=obj.bootcompute(r.ct,r.concs,sampcts);
+        sampdata=obj.bootcompute(r.ct,r.concs(:),sampcts(:));
         h(end+1)=plot(mid,sampcts,'xb');
         leg{end+1}='Data';
         for i=1:length(mid)
