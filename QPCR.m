@@ -132,7 +132,7 @@ classdef QPCR < handle
         deviation(concsel)=ct(concsel)-predict(concsel);
         fprintf('Primer %s model:  efficiency=%.2f, Conc(Ct=10)=%.1f%s, Conc(Ct=0)=%.2g%s\n', primer, eff, ct10, args.units,ct0, args.units);
         tmp=obj.refs(primer);
-        tmp.mdl=struct('fit',fit,'concrange',fitconcrange,'eff',eff,'ct0',ct0,'ct10',ct10,'ctnoise',ctnoise,'deviation',deviation);
+        tmp.mdl=struct('N',sum(concsel), 'fit',fit,'conc',refconcs(concsel),'ct',ct(concsel),'concrange',fitconcrange,'eff',eff,'ct0',ct0,'ct10',ct10,'ctnoise',ctnoise,'deviation',deviation);
         obj.refs(primer)=tmp;
       end
       obj.setref(primer,refwells);
