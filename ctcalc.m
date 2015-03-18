@@ -24,9 +24,13 @@ for i=1:size(fu,2)
   estart=find(fu(:,i)>fulow,1);
   if ~isempty(estart)
     elast=max(find(fu(:,i)<fuhigh));
-    fit=polyfit(log10(fu(estart:elast,i)),(estart:elast)',1);
+    sel=false(size(fu,1),1);
+    sel(estart:elast)=true;
+    sel(fu(:,i)<0)=false;
+    cntr=1:size(fu,1);
+    fit=polyfit(log10(fu(sel,i)),cntr(sel)',1);
     ct(i)=polyval(fit,log10(args.thresh));
-    fuexp(estart:elast,i)=fu(estart:elast,i);
+    fuexp(sel,i)=fu(sel,i);
     emin=min(estart,emin);
     emax=max(elast,emax);
   else
