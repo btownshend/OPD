@@ -125,7 +125,7 @@ classdef QPCR < handle
         ct0=exp(-fit(2)/fit(1));
         ct10=ct0*eff^-10;
         predict=polyval(fit,log(refconcs));
-        ctnoise=sqrt(mean((ct(concsel)-predict(concsel)).^2));
+        ctnoise=sqrt(sum((ct(concsel)-predict(concsel)).^2)/(sum(concsel)-2));  % d.f.=N-2 since fit has 2 parameters
         deviation=nan(size(refconcs));
         deviation(concsel)=ct(concsel)-predict(concsel);
         fprintf('Primer %s model:  efficiency=%.2f, Conc(Ct=10)=%.1f%s, Conc(Ct=0)=%.2g%s\n', primer, eff, ct10, args.units,ct0, args.units);
