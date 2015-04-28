@@ -4,10 +4,11 @@ if nargin<1
   file=opdlocate();
 end
 
+setfig('opdtrack'); clf;
 while true
   z=opdread(file);
+  setfig('opdtrack');
   opdcheck(z);
-  figure(gcf);
   pause(30);
   fprintf('Updating...\n');
 end
