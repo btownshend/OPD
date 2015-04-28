@@ -110,6 +110,7 @@ classdef QPCR < handle
         error('addref: wells and refconcs must have same length\n');
       end
       interpct=5:.05:30;
+      refconcs=refconcs(:);
       interpdata=obj.bootcompute(ct,refconcs,interpct);
       % Fit points with ct in fitrange to a straight line
       ctsel=ct>=obj.options.fitrange(1) & ct<=obj.options.fitrange(2);
@@ -136,6 +137,41 @@ classdef QPCR < handle
         obj.refs(primer)=tmp;
       end
       obj.setref(primer,refwells);
+    end
+    
+    function f=fitref(obj,primer)
+    % Fit a model of the form C+Cbg = C0 * eff^-Ct
+      ref=obj.refs(primer);
+      %ft=fittype('(C0-log(x+CB))/log(EFF)','coefficients',{'EFF','C0','CB'});
+      %      ft=fittype('C0*EFF.^-x-CB','coefficients',{'EFF','C0','CB'});
+      ft=fittype('log(abs(exp(C0)*EFF.^-x-exp(CB)))','coefficients',{'EFF','C0','CB'});
+      options=fitoptions(ft);
+      %      options.StartPoint=[2,nanmean(ref.concs),nanmin(ref.concs)];
+      options.StartPoint=[2,log(nanmean(ref.concs)),log(nanmin(ref.concs))];
+      options.Lower=[1.5,-Inf,-Inf];
+      options.Upper=[2.5,Inf,Inf];
+      options.Display='iter';
+      options.Algorithm='Trust-Region';
+      options.TolFun=1e-50;
+      options.TolX=1e-10;
+      if false
+        f=fit(ref.concs,ref.ct,ft,options);
+        setfig(['fitref-',primer]);clf;
+        plot(f,ref.concs,ref.ct);
+        hold on;
+        plot(f,'predfun');
+        set(gca,'XScale','log');
+        xlabel('Concentration');
+        ylabel('Ct');
+      else
+        f=fit(ref.ct,log(ref.concs),ft,options);
+        setfig(['fitref-',primer]);clf;
+        plot(f,ref.ct,log(ref.concs));
+        hold on;
+        plot(f,'predfun');
+        ylabel('Concentration');
+        xlabel('Ct');
+      end
     end
     
     function dupref(obj,existing,new)
@@ -208,9 +244,9 @@ classdef QPCR < handle
       if any(range)>2
         fprintf('Warning: Some concentrations vary by up to %.1fx between replicates over wells %s\n',max(range),sprintf('%s ',wells));
       end
-      conc=reshape(mean(conc,1),size(w1));
-      cilow=reshape(mean(cilow,1),size(w1));
-      cihigh=reshape(mean(cihigh,1),size(w1));
+      conc=reshape(nanmean(conc,1),size(w1));
+      cilow=reshape(nanmean(cilow,1),size(w1));
+      cihigh=reshape(nanmean(cihigh,1),size(w1));
     end
 
     function plot(obj)
