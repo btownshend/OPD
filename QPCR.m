@@ -350,7 +350,7 @@ classdef QPCR < handle
 
       legend(h,leg);
       title(ti);
-      xlabel(sprintf('Concentration (%s)',r.units));
+      xlabel(sprintf('Equiv. Ref. Concentration (%s)',r.units));
       ylabel('Ct');
     end
     
