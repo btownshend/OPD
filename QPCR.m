@@ -213,7 +213,7 @@ classdef QPCR < handle
       end
     end
     
-    function [conc,cilow,cihigh]=getconc(obj,ref,rep1,rep2,rep3)
+    function [conc,cilow,cihigh]=getconc(obj,ref,rep1,rep2,rep3,rep4)
       w1=obj.parsewells(rep1);
       wells=w1(:);
       if nargin>3
@@ -229,6 +229,13 @@ classdef QPCR < handle
           error('Replicate lists must all have the same length');
         end
         wells=[wells,w3(:)];
+      end
+      if nargin>5
+        w4=obj.parsewells(rep4);
+        if any(size(w4)~=size(w1))
+          error('Replicate lists must all have the same length');
+        end
+        wells=[wells,w4(:)];
       end
       
       obj.setref(ref,wells); 	% Set it for error-checking and subsequent plotting
