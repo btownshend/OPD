@@ -113,11 +113,19 @@ classdef QPCR < handle
       refconcs=refconcs(:);
       interpdata=obj.bootcompute(ct,refconcs,interpct);
       % Fit points with ct in fitrange to a straight line
-      ctsel=ct>=obj.options.fitrange(1) & ct<=obj.options.fitrange(2);
-      minconc=min(refconcs(ctsel));
+      ctmax=obj.options.fitrange(2);
+      ctwater=[];
+      if any(refconcs==0)
+        ctwater=ct(refconcs==0);
+        if any(isfinite(ctwater))
+          ctmax=nanmean(ctwater)-3;	% Make sure we're at least 3 Ct below water Ct
+        end
+      end
+      ctsel=ct>=obj.options.fitrange(1) & ct<=ctmax;
+      minconc=min(refconcs(ctsel&refconcs>0));
       maxconc=max(refconcs(ctsel));
       concsel=refconcs>=minconc & refconcs<=maxconc & isfinite(ct);
-      obj.refs(primer)=struct('name',primer,'wells',refwlist,'welldescr',{refwells},'ct',ct,'concs',refconcs,'interpdata',interpdata,'units',args.units);
+      obj.refs(primer)=struct('name',primer,'wells',refwlist,'welldescr',{refwells},'ct',ct(refconcs>0),'concs',refconcs(refconcs>0),'interpdata',interpdata,'units',args.units,'ctwater',ctwater);
       if sum(concsel)>=2
         fit=polyfit(log(refconcs(concsel)),ct(concsel),1);
         if any(~isfinite(fit))
