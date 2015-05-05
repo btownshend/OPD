@@ -29,7 +29,7 @@ classdef QPCR < handle
   
   methods
     function obj=QPCR(ctgrid,varargin)
-      defaults=struct('extrapolate',true,'ctnoise',0.3,'nboot',100,'ci',80,'interpmethod','linear','fitrange',[8,20]);
+      defaults=struct('extrapolate',true,'ctnoise',0.3,'nboot',200,'ci',80,'interpmethod','linear','fitrange',[7,22]);
       obj.options=processargs(defaults,varargin);
 
       obj.ctgrid=ctgrid;
