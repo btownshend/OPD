@@ -132,9 +132,10 @@ classdef QPCR < handle
       end
 
       uconcs=unique(refconcs);
+      wnames=obj.getwellnames(refwlist);
       for i=1:length(uconcs)
         ct1=ct(refconcs==uconcs(i));
-        rw1=refwells(refconcs==uconcs(i));
+        rw1=wnames(refconcs==uconcs(i));
         if range(ct1)>1.0
           fprintf('Warning: Cts vary by %.1f between reference replicates over wells: ',range(ct1));
           for j=1:length(ct1)
@@ -149,6 +150,7 @@ classdef QPCR < handle
 
       % Compute limit of detection
       if isempty(ctwater)
+        fprintf('Warning: Missing "water" sample(s) for primer %s\n',primer);
         ctlod=max(ct);
       else
         ctlod=min(ctwater);
@@ -359,8 +361,9 @@ classdef QPCR < handle
       h(end+1)=semilogx(r.concs,r.ct,'or');	% References
       leg{end+1}='Reference';
       hold on;
+      wellnms=obj.getwellnames(r.wells);
       for i=1:length(r.concs)
-        hh=text(r.concs(i)*1.05,r.ct(i),r.welldescr{i});
+        hh=text(r.concs(i)*1.05,r.ct(i),wellnms{i});
         set(hh,'Color','red');
       end
       
