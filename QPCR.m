@@ -1,6 +1,5 @@
 % QPCR analysis
 % This class manages references and interpolating the references to get the concentrations of unknowns on the same plate
-% It also provides error estimates using bootstrapping of the interpolation process
 classdef QPCR < handle
   properties
     options;	% Option settings
@@ -25,11 +24,27 @@ classdef QPCR < handle
         end
       end
     end
+
+    function [c,clow,chigh]=concsub(c1,c1low,c1high,c2,c2low,c2high)
+    % Subtract concentrations including confidence intervals
+      c=max(0,c1-c2);
+      clow=max(0,c-sqrt((c1low-c1).^2+(c2low-c2).^2));
+      chigh=c+sqrt((c1high-c1).^2+(c2high-c2).^2);
+    end
+    
+    function [c,clow,chigh]=concadd(c1,c1low,c1high,c2,c2low,c2high)
+    % Add concentrations including confidence intervals
+      c=c1+c2;
+      clow=c-sqrt((c1low-c1).^2+(c2low-c2).^2);
+      chigh=c+sqrt((c1high-c1).^2+(c2high-c2).^2);
+    end
+    
+
   end
   
   methods
     function obj=QPCR(ctgrid,varargin)
-      defaults=struct('extrapolate',true,'ctnoise',0.3,'nboot',200,'ci',80,'interpmethod','linear','fitrange',[7,22]);
+      defaults=struct('extrapolate',true,'ci',80,'minct',7);
       obj.options=processargs(defaults,varargin);
 
       obj.ctgrid=ctgrid;
@@ -91,6 +106,11 @@ classdef QPCR < handle
       end
     end
 
+    function nms=getwellnames(obj,wlist) 
+    % Convert a list of well numbers to names
+      nms=reshape(obj.wellnames(wlist(:)),size(wlist));
+    end
+    
     function ct=getct(obj,well)
       wlist=obj.parsewells(well);
       ct=obj.ctgrid(wlist);
@@ -106,26 +126,40 @@ classdef QPCR < handle
       refwlist=obj.parsewells(refwells);
       ct=obj.getct(refwells);
       ct=ct(:);
+      refconcs=refconcs(:);
       if length(ct)~=length(refconcs)
         error('addref: wells and refconcs must have same length\n');
       end
-      interpct=5:.05:30;
-      refconcs=refconcs(:);
-      interpdata=obj.bootcompute(ct,refconcs,interpct);
-      % Fit points with ct in fitrange to a straight line
-      ctmax=obj.options.fitrange(2);
-      ctwater=[];
-      if any(refconcs==0)
-        ctwater=ct(refconcs==0);
-        if any(isfinite(ctwater))
-          ctmax=nanmean(ctwater)-3;	% Make sure we're at least 3 Ct below water Ct
+
+      uconcs=unique(refconcs);
+      for i=1:length(uconcs)
+        ct1=ct(refconcs==uconcs(i));
+        rw1=refwells(refconcs==uconcs(i));
+        if range(ct1)>1.0
+          fprintf('Warning: Cts vary by %.1f between reference replicates over wells: ',range(ct1));
+          for j=1:length(ct1)
+            fprintf('%s [%.1f] ',rw1{j},ct1(j));
+          end
+          fprintf('\n');
         end
       end
-      ctsel=ct>=obj.options.fitrange(1) & ct<=ctmax;
+
+      % Fit points with ct in fitrange to a straight line
+      ctwater=ct(refconcs==0);
+
+      % Compute limit of detection
+      if isempty(ctwater)
+        ctlod=max(ct);
+      else
+        ctlod=min(ctwater);
+      end
+
+      ctsel=ct>=obj.options.minct & ct<=(ctlod-2.5);    % This much away from the noise floor will add 0.27 Ct of "noise" of the measurement, which is on the order of the usual noise
       minconc=min(refconcs(ctsel&refconcs>0));
       maxconc=max(refconcs(ctsel));
       concsel=refconcs>=minconc & refconcs<=maxconc & isfinite(ct);
-      obj.refs(primer)=struct('name',primer,'wells',refwlist,'welldescr',{refwells},'ct',ct(refconcs>0),'concs',refconcs(refconcs>0),'interpdata',interpdata,'units',args.units,'ctwater',ctwater);
+      obj.refs(primer)=struct('name',primer,'wells',refwlist,'welldescr',{refwells},'ct',ct(refconcs>0),'concs',refconcs(refconcs>0),'units',args.units,'ctwater',ctwater,'samples',containers.Map());
+      % samples will hold individual sample data
       if sum(concsel)>=2
         fit=polyfit(log(refconcs(concsel)),ct(concsel),1);
         if any(~isfinite(fit))
@@ -136,12 +170,14 @@ classdef QPCR < handle
         ct0=exp(-fit(2)/fit(1));
         ct10=ct0*eff^-10;
         predict=polyval(fit,log(refconcs));
-        ctnoise=sqrt(sum((ct(concsel)-predict(concsel)).^2)/(sum(concsel)-2));  % d.f.=N-2 since fit has 2 parameters
+        ctnoise=sqrt(sum((ct(concsel)-predict(concsel)).^2)/(sum(concsel)-2));  % d.f.=N-2 since fit has 2 parameters  (this is also known as Sy|x )
         deviation=nan(size(refconcs));
         deviation(concsel)=ct(concsel)-predict(concsel);
-        fprintf('Primer %s model:  efficiency=%.2f, Conc(Ct=10)=%.1f%s, Conc(Ct=0)=%.2g%s\n', primer, eff, ct10, args.units,ct0, args.units);
+        lod=ct0*eff^-ctlod;
+        sxloglod=ctnoise/eff*sqrt(1+1/sum(concsel)+(ctlod-mean(ct(concsel))).^2/(eff^2*sum((log(refconcs(concsel))-mean(log(refconcs(concsel)))).^2)));
+        fprintf('Primer %s model:  efficiency=%.2f, Conc(Ct=10)=%.1f%s, Conc(Ct=0)=%.2g%s Det Limit=%.2g%s (Ct=%.1f)\n', primer, eff, ct10, args.units,ct0, args.units,lod,args.units,ctlod);
         tmp=obj.refs(primer);
-        tmp.mdl=struct('N',sum(concsel), 'fit',fit,'conc',refconcs(concsel),'ct',ct(concsel),'concrange',fitconcrange,'eff',eff,'ct0',ct0,'ct10',ct10,'ctnoise',ctnoise,'deviation',deviation);
+        tmp.mdl=struct('N',sum(concsel), 'fit',fit,'conc',refconcs(concsel),'ct',ct(concsel),'concrange',fitconcrange,'eff',eff,'ct0',ct0,'ct10',ct10,'ctnoise',ctnoise,'deviation',deviation,'ctlod',ctlod,'lod',lod,'sxloglod',sxloglod);
         obj.refs(primer)=tmp;
       end
       obj.setref(primer,refwells);
@@ -186,27 +222,6 @@ classdef QPCR < handle
       obj.refs(new)=obj.refs(existing);
     end
     
-    function ctnoise=estimateNoise(obj)
-    % Check if we have reference replicates; use to compute a ct noise level
-      ctnoise=nan;
-      if length(unique(refconcs))< length(refconcs)
-        stdlist=[];
-        uy=unique(refconcs);
-        for i=1:length(uy)
-          sel=isfinite(x)&refconcs==uy(i);
-          if sum(sel)>1
-            stdlist(end+1)=std(x(sel));
-          end
-        end
-        if length(stdlist)>0
-          fprintf('Ct stdev = %.2f over %d replicated concentrations\n',mean(stdlist), length(stdlist));
-        end
-        if length(stdlist)>=3 && isempty(obj.options.ctnoise)
-          ctnoise=mean(stdlist);
-        end
-      end
-    end
-
     function setref(obj,ref,wells)
     % Set the reference used for the given wells
       if ~isKey(obj.refs,ref)
@@ -247,23 +262,67 @@ classdef QPCR < handle
       end
       
       obj.setref(ref,wells); 	% Set it for error-checking and subsequent plotting
-      refdata=obj.refs(ref);
       ct=obj.getct(wells);
-      conc=interp1([refdata.interpdata.ct],[refdata.interpdata.conc],ct);
-      cilow=interp1([refdata.interpdata.ct],[refdata.interpdata.cilow],ct);
-      cihigh=interp1([refdata.interpdata.ct],[refdata.interpdata.cihigh],ct);
-      conc=reshape(conc,length(w1(:)),[])';
-      cilow=reshape(cilow,length(w1(:)),[])';
-      cihigh=reshape(cihigh,length(w1(:)),[])';
-      range=max(conc)./min(conc);
-      if any(range)>2
-        fprintf('Warning: Some concentrations vary by up to %.1fx between replicates over wells %s\n',max(range),sprintf('%s ',wells));
+
+      for i=1:size(ct,1)
+        if range(ct(i,:))>1.0
+          fprintf('Warning: Cts vary by %.1f between replicates over wells: ',range(ct(i,:)));
+          for j=1:size(ct,2)
+            fprintf('%s [%.1f] ',obj.wellnames{wells(i,j)},ct(i,j));
+          end
+          fprintf('\n');
+        end
       end
-      conc=reshape(nanmean(conc,1),size(w1));
-      cilow=reshape(nanmean(cilow,1),size(w1));
-      cihigh=reshape(nanmean(cihigh,1),size(w1));
+      [conc,cilow,cihigh]=obj.getconcfromct(ref,ct);
+      s=obj.refs(ref).samples;
+      for i=1:length(conc)
+        sel=isfinite(ct(i,:));
+        if sum(sel)==0
+          continue;
+        end
+        wellnms=obj.wellnames(wells(i,sel));
+        sampname=wellnms{1};
+        for j=2:length(wellnms)
+          sampname=[sampname,'+',wellnms{j}];
+        end
+        s(sampname)=struct('name',sampname,'wells',{wellnms},'ct',ct(i,sel),'conc',conc(i),'cilow',cilow(i),'cihigh',cihigh(i));
+      end
+      conc=reshape(conc,size(w1));
+      cilow=reshape(cilow,size(w1));
+      cihigh=reshape(cihigh,size(w1));
+    end
+    
+    function [conc,cilow,cihigh]=getconcfromct(obj,ref,ct)
+      ctmean=nanmean(ct,2);
+      ctcnt=sum(isfinite(ct),2);
+      m=obj.refs(ref).mdl;
+
+      % From www.chem.utoronto.ca/coursenotes/analsic/LinRegr2b.pdf
+      % sxy=syx/b*sqrt(1/m+1/n+(y0-ybar)^2/( b^2 *sum(xi-xbar)^2 )
+      % Modified to handle different measurement noise from model noise
+      ctnoise=nanmax(m.ctnoise,std(ct,[],2));
+      sx2measure=(ctnoise/m.fit(1)).^2./ctcnt;
+      sx2model=(m.ctnoise/m.fit(1)).^2*(1/m.N+(ctmean-mean(m.ct)).^2/(m.fit(1)^2*sum((log(m.conc)-mean(log(m.conc))).^2)));
+      sx=sqrt(sx2measure+sx2model);
+
+      % [xx,xxlo,xxhi]=invpred(log(m.conc),m.ct,ctmean,'predopt','observation');
+      tfact=tinv(1-(1-obj.options.ci/100)/2,m.N-2);	% T-statistic to provide desired CI
+      logconc=(ctmean-m.fit(2))/m.fit(1);
+      logconcerr=sx*tfact;
+
+      conc=exp(logconc);
+      cilow=exp(logconc-logconcerr);
+      cihigh=exp(logconc+logconcerr);
+
+      % Subtract water background concentration from estimated concentrations
+      logloderr=m.sxloglod*tfact;
+      lod=m.lod;
+      lodlow=exp(log(lod)-logloderr);
+      lodhigh=exp(log(lod)+logloderr);
+      [conc,cilow,cihigh]=obj.concsub(conc,cilow,cihigh,lod,lodlow,lodhigh);
     end
 
+    
     function plot(obj)
       refnames=sort(keys(obj.refs));
       nx=ceil(length(refnames)/4);
@@ -299,19 +358,25 @@ classdef QPCR < handle
       h=[]; leg={};
       h(end+1)=semilogx(r.concs,r.ct,'or');	% References
       leg{end+1}='Reference';
+      hold on;
+      for i=1:length(r.concs)
+        hh=text(r.concs(i)*1.05,r.ct(i),r.welldescr{i});
+        set(hh,'Color','red');
+      end
       
       % Draw lines showing best point, confidence intervals
       hold on;
-      plot(smooth([r.interpdata.conc]),[r.interpdata.ct],'g');
-      h(end+1)=plot(smooth([r.interpdata.cilow]),[r.interpdata.ct],'g:');
-      leg{end+1}='Reference CI';
-      plot(smooth([r.interpdata.cihigh]),[r.interpdata.ct],'g:');
 
       % Draw fit
       if isfield(r,'mdl')
-        fitconc=[r.interpdata.conc];
-        sel=fitconc>=r.mdl.concrange(1) & fitconc<=r.mdl.concrange(2);
-        fitconc=fitconc(sel);
+        ctplot=5:0.1:r.mdl.ctlod;
+        [conc,cilow,cihigh]=obj.getconcfromct(ref,ctplot');
+        plot(conc,ctplot,'g');
+        h(end+1)=plot(cilow,ctplot,'g:');
+        leg{end+1}='Reference CI';
+        plot(cihigh,ctplot,'g:');
+
+        fitconc=r.mdl.concrange(1):0.1:r.mdl.concrange(2);
         fitct=polyval(r.mdl.fit,log(fitconc));
         h(end+1)=plot(fitconc,fitct,'r');
         leg{end+1}='Linear Fit';
@@ -320,27 +385,19 @@ classdef QPCR < handle
         end
       end
       
-      % Overlay interpolated data for samples that use this reference
-      sampwells=find(strcmp(obj.primers(:),ref));
-      isref=ismember(sampwells,r.wells);	% Don't replot references
-      sampwells=sampwells(~isref);
-      sampcts=obj.getct(sampwells);
-
-      if isempty(sampcts)
-        fprintf('No non-reference data points for %s to plot\n', ref);
-      else
-        [mid,low,high]=obj.getconc(ref,sampwells);
-        sampdata=obj.bootcompute(r.ct,r.concs(:),sampcts(:));
-        h(end+1)=plot(mid,sampcts,'xb');
-        leg{end+1}='Data';
-        for i=1:length(mid)
-          hh=plot([low(i),high(i)],sampcts(i)*[1,1],'-b');
-          text(high(i),sampcts(i),obj.wellnames{sampwells(i)});
-          if i==1
-            h(end+1)=hh;
-            leg{end+1}='Data CI';
-          end
-        end
+      % Overlay data for samples that use this reference
+      sampkeys=r.samples.keys;
+      for i=1:length(sampkeys)
+        s=r.samples(sampkeys{i});
+        hh=plot(s.conc,nanmean(s.ct),'xb');
+        plot([s.cilow,s.cihigh],nanmean(s.ct)*[1,1],'-b');
+        plot(s.conc*ones(1,length(s.ct)),s.ct,'ob');
+        plot(s.conc*[1,1],[nanmin(s.ct),nanmax(s.ct)],'-b');
+        text(s.cihigh*1.05,nanmean(s.ct),s.name);
+      end
+      if length(sampkeys)>0
+        leg{end+1}='Sample';
+        h(end+1)=hh;
       end
 
       c=axis;
@@ -373,52 +430,6 @@ classdef QPCR < handle
       ylabel('Ct difference from linear fit');
     end
     
-    function data=bootcompute(obj,x,y,xv)
-    % Bootstrap estimate
-      bootstat=bootstrp(obj.options.nboot,@(xa,ya)(obj.compute(xa+randn(size(xa))*obj.options.ctnoise,ya,xv+randn(size(xv))*obj.options.ctnoise)),x,y);
-      fracfinite=mean(isfinite(bootstat));
-      %bootstat(:,fracfinite<0.5)=nan;		% Make sure that points that are often unusable are not given a value
-      med=nanmedian(bootstat);
-      med(fracfinite<0.5)=nan;
-      data=struct('ct',num2cell(xv(:)'),'conc',num2cell(med),'std',num2cell(nanstd(bootstat)),'cilow',num2cell(prctile(bootstat,(100-obj.options.ci)/2)),'cihigh',num2cell(prctile(bootstat,100-(100-obj.options.ci)/2)),'ci',obj.options.ci,'bootstat',num2cell(bootstat,1),'fracfinite',num2cell(fracfinite));
-      data=reshape(data,size(xv));
-    end
-    
-    function conc=compute(obj,x,y,xv)
-      sel=isfinite(x) & isfinite(y);
-      x=x(sel);y=y(sel);
-      uy=sort(unique(y(:)'));
-      ux=[];
-      for i=1:length(uy)
-        sel=(y==uy(i) & isfinite(x));
-        ux(i)=nanmean(x(sel));
-      end
-      while any(ux(2:end)>ux(1:end-1))
-        for i=1:length(ux)-1
-          if ux(i+1)>ux(i)
-            %fprintf('Fixing inverted: ');
-            ux=[ux(1:i-1),mean(ux(i:i+1)),ux(i+2:end)];
-            uy=[uy(1:i-1),mean(uy(i:i+1)),uy(i+2:end)];
-            break;
-          end
-        end
-      end
-
-      if length(ux)<2
-        fprintf('compute: Only %d interpolation points\n', sum(sel));
-        conc=nan;
-        return;
-      end
-
-      if obj.options.extrapolate
-        conc=exp(interp1(ux,log(uy),xv(:),obj.options.interpmethod,'extrap'));
-      else
-        conc=exp(interp1(ux,log(uy),xv(:),obj.options.interpmethod,NaN));
-      end
-
-      conc=reshape(conc,size(xv));
-    end
-
   end % methods
 end % classdef
 
