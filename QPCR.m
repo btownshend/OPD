@@ -381,8 +381,10 @@ classdef QPCR < handle
         h(end+1)=plot(fitconc,fitct,'r');
         leg{end+1}='Linear Fit';
         if isfield(r.mdl,'eff') && isfield(r.mdl,'ct10')
-          ti=[ti,sprintf(' eff=%.2f, Conc(Ct=10)=%.2f%s, ctnoise=%.2f', r.mdl.eff, r.mdl.ct10,r.units, r.mdl.ctnoise)];
+          ti=[ti,sprintf(' eff=%.2f, Conc(Ct=10)=%.2f%s, ctnoise=%.2f, det limit=%.2g%s', r.mdl.eff, r.mdl.ct10,r.units, r.mdl.ctnoise,r.mdl.lod,r.units)];
         end
+        c=axis;
+        plot(r.mdl.lod*[1,1],c(3:4),':r');
       end
       
       % Overlay data for samples that use this reference
