@@ -172,7 +172,8 @@ classdef QPCR < handle
         ct0=exp(-fit(2)/fit(1));
         ct10=ct0*eff^-10;
         predict=polyval(fit,log(refconcs));
-        ctnoise=sqrt(sum((ct(concsel)-predict(concsel)).^2)/(sum(concsel)-2));  % d.f.=N-2 since fit has 2 parameters  (this is also known as Sy|x )
+        ctnoise=sqrt(median((ct(concsel)-predict(concsel)).^2)*sum(concsel)/(sum(concsel)-2));  % d.f.=N-2 since fit has 2 parameters  (this is also known as Sy|x )
+        % ctnoise=sqrt(sum((ct(concsel)-predict(concsel)).^2)/(sum(concsel)-2));  % d.f.=N-2 since fit has 2 parameters  (this is also known as Sy|x )
         deviation=nan(size(refconcs));
         deviation(concsel)=ct(concsel)-predict(concsel);
         lod=ct0*eff^-ctlod;
