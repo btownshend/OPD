@@ -28,27 +28,38 @@ fuexp=nan(size(fu));
 ct=nan(1,size(fu,2));
 emin=12; emax=12;
 for i=1:size(fu,2)
-  baseline=prctile(fu(args.basecycles,i),25);
-  fu(:,i)=fu(:,i)-baseline;
-  estart=find(fu(:,i)>fulow,1);
-  if ~isempty(estart)
-    elast=max(find(fu(:,i)<fuhigh));
-    sel=false(size(fu,1),1);
-    sel(estart:elast)=true;
-    sel(fu(:,i)<0)=false;
-    cntr=1:size(fu,1);
-    fit=polyfit(log10(fu(sel,i)),cntr(sel)',1);
-    ct(i)=polyval(fit,log10(args.thresh));
-    fuexp(sel,i)=fu(sel,i);
-    emin=min(estart,emin);
-    emax=max(elast,emax);
-  else
-    estart=nan;
-    elast=nan;
-    fit=[nan,nan];
-  end
-  if args.debug
-    fprintf('Sample %d: baseline=%.1f, max=%.1f, estart=%d, elast=%d, fit=(%f,%f), ct=%.1f\n', i, baseline, max(fu(:,i)), estart, elast,fit,ct(i));
+  basecycles=args.basecycles;
+  for baseredo=1:2
+    baseline=prctile(fu(basecycles,i),25);
+    fu(:,i)=fu(:,i)-baseline;
+    estart=find(fu(:,i)>fulow & (1:size(fu,1))'>max(basecycles),1);
+    if ~isempty(estart)
+      elast=find(fu(estart:end,i)>fuhigh,1);
+      if isempty(elast)
+        elast=size(fu,1);
+      else
+        elast=elast+estart-1;
+      end
+      sel=false(size(fu,1),1);
+      sel(estart:elast)=true;
+      sel(fu(:,i)<0)=false;
+      cntr=1:size(fu,1);
+      fit=polyfit(log10(fu(sel,i)),cntr(sel)',1);
+      ct(i)=polyval(fit,log10(args.thresh));
+      fuexp(sel,i)=fu(sel,i);
+      emin=min(estart,emin);
+      emax=max(elast,emax);
+    else
+      estart=nan;
+      elast=nan;
+      fit=[nan,nan];
+    end
+    if args.debug
+      fprintf('Sample %d: baseline=%.1f [%d-%d], max=%.1f, estart=%d, elast=%d, fit=(%f,%f), ct=%.1f\n', i, baseline, min(basecycles), max(basecycles), max(fu(:,i)), estart, elast,fit,ct(i));
+    end
+    if baseredo==1
+      basecycles=max(min(args.basecycles),estart-8):(estart-2);
+    end
   end
 end
 opd.ct=ct;
