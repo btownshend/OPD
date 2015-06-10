@@ -83,12 +83,13 @@ if args.doplot
   subplot(212);
   semilogy(fu,'y');
   hold on;
-  semilogy(fuexp);
+  semilogy(fuexp,'.-');
   hold on;
   plot(ct,0*ct+args.thresh,'o');
   if any(isfinite(fuexp(:)))
     % axis([emin,emax,nanmin(fuexp(:)),nanmax(fuexp(:))]);
   end
+  c=axis; c(3)=10; axis(c);
   w=wellnames(opd);
   if ~isempty(args.samps)
     w=args.samps;
