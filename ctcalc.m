@@ -5,7 +5,16 @@ args=processargs(defaults,varargin);
 if isempty(args.samps)
   fu=squeeze(opd.avg.scaled);
 else
-  fu=squeeze(opd.avg.scaled(:,:,args.samps));
+  wellnms=wellnames(opd);
+  w=[];
+  for i=1:length(args.samps)
+    f=find(strcmp(args.samps{i},wellnms));
+    if ~isempty(f)
+      w(end+1)=f;
+    end
+  end
+  sampsel=w;
+  fu=squeeze(opd.avg.scaled(:,:,sampsel));
 end
 
 fulow=4*mean(std(fu(args.basecycles,:),1));
@@ -45,17 +54,18 @@ end
 opd.ct=ct;
 
 % Create a full grid version of ct
-w=wellnames(opd);
-opd.ctgrid=nan(8,12);
-for j='A':'H'
-  for i=1:12
-    ind=find(strcmp(w,sprintf('%c%d',j,i)));
-    if ~isempty(ind)
-      opd.ctgrid(j-'A'+1,i)=ct(ind);
+if isempty(args.samps)
+  w=wellnames(opd);
+  opd.ctgrid=nan(8,12);
+  for j='A':'H'
+    for i=1:12
+      ind=find(strcmp(w,sprintf('%c%d',j,i)));
+      if ~isempty(ind)
+        opd.ctgrid(j-'A'+1,i)=ct(ind);
+      end
     end
   end
 end
-
 
 if args.doplot
   setfig('ctplot'); clf;
@@ -67,6 +77,9 @@ if args.doplot
   plot([c(1),c(2)],fuhigh*[1,1],':');
   plot(args.basecycles(1)*[1,1],[c(3),c(4)],':');
   plot(args.basecycles(end)*[1,1],[c(3),c(4)],':');
+  if ~isempty(args.samps) && length(args.samps)<20
+    legend(args.samps,'Location','EastOutside');
+  end
   subplot(212);
   semilogy(fu,'y');
   hold on;
@@ -78,7 +91,7 @@ if args.doplot
   end
   w=wellnames(opd);
   if ~isempty(args.samps)
-    w=w(args.samps);
+    w=args.samps;
   end
   % if length(w)==length(ct)
   %   for i=1:length(ct)
