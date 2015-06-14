@@ -20,6 +20,8 @@ end
 fulow=4*mean(std(fu(args.basecycles,:),1));
 if isnan(args.thresh)
   args.thresh=fulow*2;
+else
+  fulow=args.thresh/2;
 end
 fuhigh=args.thresh*4;
 
