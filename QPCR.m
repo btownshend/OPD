@@ -277,6 +277,16 @@ classdef QPCR < handle
     end
     
     function [conc,cilow,cihigh]=getconc(obj,ref,rep1,rep2,rep3,rep4)
+    function cmat=getconcmat(obj,ref,rep1,rep2,rep3,rep4,varargin)
+      defaults=struct('length',nan,'dilution',nan,'strands',[]);
+      args=processargs(defaults,varargin);
+      if nargin<4; rep2=[]; end;
+      if nargin<5; rep3=[]; end;
+      if nargin<6; rep4=[]; end;
+      [c,l,h]=getconc(obj,ref,rep1,rep2,rep3,rep4,'length',args.length,'dilution',args.dilution,'strands',args.strands);
+      cmat=[c(:),l(:),h(:)];
+    end
+    
       w1=obj.parsewells(rep1);
       wells=w1(:);
       if nargin>3
