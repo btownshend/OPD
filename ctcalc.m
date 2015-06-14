@@ -57,7 +57,7 @@ for i=1:size(fu,2)
     if args.debug
       fprintf('Sample %d: baseline=%.1f [%d-%d], max=%.1f, estart=%d, elast=%d, fit=(%f,%f), ct=%.1f\n', i, baseline, min(basecycles), max(basecycles), max(fu(:,i)), estart, elast,fit,ct(i));
     end
-    if baseredo==1
+    if baseredo==1 && isfinite(estart)
       basecycles=max(min(args.basecycles),estart-8):(estart-2);
     end
   end
