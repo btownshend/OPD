@@ -276,7 +276,6 @@ classdef QPCR < handle
       end
     end
     
-    function [conc,cilow,cihigh]=getconc(obj,ref,rep1,rep2,rep3,rep4)
     function cmat=getconcmat(obj,ref,rep1,rep2,rep3,rep4,varargin)
       defaults=struct('length',nan,'dilution',nan,'strands',[]);
       args=processargs(defaults,varargin);
@@ -287,23 +286,26 @@ classdef QPCR < handle
       cmat=[c(:),l(:),h(:)];
     end
     
+    function [conc,cilow,cihigh]=getconc(obj,ref,rep1,rep2,rep3,rep4,varargin)
+      defaults=struct('length',nan,'dilution',nan,'strands',[]);
+      args=processargs(defaults,varargin);
       w1=obj.parsewells(rep1);
       wells=w1(:);
-      if nargin>3
+      if nargin>3 && ~isempty(rep2)
         w2=obj.parsewells(rep2);
         if any(size(w2)~=size(w1))
           error('Replicate lists must all have the same length');
         end
         wells=[wells,w2(:)];
       end
-      if nargin>4
+      if nargin>4 && ~isempty(rep3)
         w3=obj.parsewells(rep3);
         if any(size(w3)~=size(w1))
           error('Replicate lists must all have the same length');
         end
         wells=[wells,w3(:)];
       end
-      if nargin>5
+      if nargin>5 && ~isempty(rep4)
         w4=obj.parsewells(rep4);
         if any(size(w4)~=size(w1))
           error('Replicate lists must all have the same length');
