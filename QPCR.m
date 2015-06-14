@@ -5,6 +5,9 @@ classdef QPCR < handle
     options;	% Option settings
     wellnames;	% Cell array of well names (e.g. wellnames(8,12) )
     ctgrid;	% Grid of plate ct values (e.g ctgrid(8,12) )
+    dilgrid;	% Dilutions from samples
+    lengrid;	% Length of products
+    strandgrid;	% Number of strands in samples (1 or 2)
     primers;	% Cell array of primer pairs used
     refs;	% Map of primer->ref entry; each entry is a struct containing the reference information for that primer pair
   end
@@ -44,10 +47,31 @@ classdef QPCR < handle
   
   methods
     function obj=QPCR(ctgrid,varargin)
-      defaults=struct('extrapolate',true,'ci',80,'minct',7);
-      obj.options=processargs(defaults,varargin);
+      defaults=struct('extrapolate',true,'ci',80,'minct',7,'dilgrid',[],'lengrid',[],'strandgrid',[]);
+      args=processargs(defaults,varargin);
 
+      obj.options=rmfield(args,{'dilgrid','lengrid','strandgrid'});
       obj.ctgrid=ctgrid;
+      if isempty(args.dilgrid)
+        obj.dilgrid=ones(size(ctgrid));
+      else
+        assert(all(size(ctgrid)==size(args.dilgrid)));
+        obj.dilgrid=args.dilgrid;
+      end
+      if isempty(args.lengrid)
+        obj.lengrid=ones(size(ctgrid));
+      else
+        assert(all(size(ctgrid)==size(args.lengrid)));
+        obj.lengrid=args.lengrid;
+      end
+      if isempty(args.strandgrid)
+        obj.strandgrid=ones(size(ctgrid));
+      else
+        assert(all(size(ctgrid)==size(args.strandgrid)));
+        assert(all(args.strandgrid(:)==1 | args.strandgrid(:)==2 | isnan(args.strandgrid(:))));
+        obj.strandgrid=args.strandgrid;
+      end
+      
       % Create a map to go from wellname to ct
       obj.primers=cell(size(ctgrid));
       obj.refs=containers.Map();
@@ -124,6 +148,19 @@ classdef QPCR < handle
         error('addref: Already have a reference defined for %s\n',primer);
       end
       refwlist=obj.parsewells(refwells);
+      dilution=unique(obj.dilgrid(refwlist));
+      if length(dilution)>1
+        error('Reference %s has multiple different dilutions specified by dilgrid\n',primer);
+      end
+      strands=unique(obj.strandgrid(refwlist));
+      if length(strands)>1
+        error('Reference %s has multiple different strand counts specified by strandgrid\n',primer);
+      end
+      len=unique(obj.lengrid(refwlist));
+      if length(len)>1
+        error('Reference %s has multiple different lengths specified by lengrid\n',primer);
+      end
+      
       ct=obj.getct(refwells);
       ct=ct(:);
       refconcs=refconcs(:);
@@ -290,6 +327,15 @@ classdef QPCR < handle
         end
         s(sampname)=struct('name',sampname,'wells',{wellnms},'ct',ct(i,sel),'conc',conc(i),'cilow',cilow(i),'cihigh',cihigh(i));
       end
+      % Correct for length, dilution, strands
+      if ~isnan(args.length)
+        obj.lengrid(wlist(:))=args.length;
+      end
+      r=obj.refs(ref);
+      w1=w1(:);
+      conc=conc.*(obj.dilgrid(w1)/r.dilution)./(obj.lengrid(w1)/r.len)./(obj.strandgrid(w1)/r.strands);
+      cilow=cilow.*(obj.dilgrid(w1)/r.dilution)./(obj.lengrid(w1)/r.len)./(obj.strandgrid(w1)/r.strands);
+      cihigh=cihigh.*(obj.dilgrid(w1)/r.dilution)./(obj.lengrid(w1)/r.len)./(obj.strandgrid(w1)/r.strands);
       conc=reshape(conc,size(w1));
       cilow=reshape(cilow,size(w1));
       cihigh=reshape(cihigh,size(w1));
