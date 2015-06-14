@@ -197,7 +197,7 @@ classdef QPCR < handle
       minconc=min(refconcs(ctsel&refconcs>0));
       maxconc=max(refconcs(ctsel));
       concsel=refconcs>=minconc & refconcs<=maxconc & isfinite(ct);
-      obj.refs(primer)=struct('name',primer,'wells',refwlist,'welldescr',{refwells},'ct',ct(refconcs>0),'concs',refconcs(refconcs>0),'units',args.units,'ctwater',ctwater,'samples',containers.Map());
+      obj.refs(primer)=struct('name',primer,'wells',refwlist(refconcs>0),'welldescr',{refwells(refconcs>0)},'ct',ct(refconcs>0),'concs',refconcs(refconcs>0),'units',args.units,'ctwater',ctwater,'samples',containers.Map(),'len',len,'dilution',dilution,'strands',strands);
       % samples will hold individual sample data
       if sum(concsel)>=2
         fit=polyfit(log(refconcs(concsel)),ct(concsel),1);
