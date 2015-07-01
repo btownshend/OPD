@@ -69,13 +69,15 @@ opd.ct=ct;
 % Create a full grid version of ct
 if isempty(args.samps)
   w=wellnames(opd);
-  opd.ctgrid=nan(8,12);
-  for j='A':'H'
-    for i=1:12
-      ind=find(strcmp(w,sprintf('%c%d',j,i)));
-      if ~isempty(ind)
-        opd.ctgrid(j-'A'+1,i)=ct(ind);
-      end
+else
+  w=args.samps;
+end
+opd.ctgrid=nan(8,12);
+for j='A':'H'
+  for i=1:12
+    ind=find(strcmp(w,sprintf('%c%d',j,i)));
+    if ~isempty(ind)
+      opd.ctgrid(j-'A'+1,i)=ct(ind);
     end
   end
 end
