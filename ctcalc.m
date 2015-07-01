@@ -24,6 +24,9 @@ else
   fulow=args.thresh/2;
 end
 fuhigh=args.thresh*4;
+if (args.debug)
+  fprintf('Thresh=%.1f, FU(low)=%.1f, FU(high)=%.1f\n', args.thresh, fulow, fuhigh);
+end
 
 % Loop over each trace
 fuexp=nan(size(fu));
