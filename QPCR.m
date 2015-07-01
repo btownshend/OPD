@@ -199,6 +199,9 @@ classdef QPCR < handle
       ctsel=ct>=obj.options.minct & ct<=(ctlod-2.5);    % This much away from the noise floor will add 0.27 Ct of "noise" of the measurement, which is on the order of the usual noise
       minconc=min(refconcs(ctsel&refconcs>0));
       maxconc=max(refconcs(ctsel));
+      if isempty(minconc)
+        error('No Ct values for any concentrations of reference for primer %s\n', primer);
+      end
       concsel=refconcs>=minconc & refconcs<=maxconc & isfinite(ct);
       obj.refs(primer)=struct('name',primer,'wells',refwlist(refconcs>0),'welldescr',{obj.getwellnames(refwlist(refconcs>0))},'ct',ct(refconcs>0),'concs',refconcs(refconcs>0),'units',args.units,'ctwater',ctwater,'samples',containers.Map(),'len',len,'dilution',dilution,'strands',strands);
       % samples will hold individual sample data
