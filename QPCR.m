@@ -141,7 +141,7 @@ classdef QPCR < handle
     end
     
     function addref(obj,primer,refwells,refconcs,varargin)
-      defaults=struct('units','nM');
+      defaults=struct('units','nM','length',[],'strands',[]);
       args=processargs(defaults,varargin);
 
       if isKey(obj.refs,primer)
@@ -152,9 +152,15 @@ classdef QPCR < handle
       if length(dilution)>1
         error('Reference %s has multiple different dilutions specified by dilgrid\n',primer);
       end
+      if ~isempty(args.strands)
+        obj.strandgrid(refwlist)=args.strands;
+      end
       strands=unique(obj.strandgrid(refwlist));
       if length(strands)>1
         error('Reference %s has multiple different strand counts specified by strandgrid\n',primer);
+      end
+      if ~isempty(args.length)
+        obj.lengrid(refwlist)=args.length;
       end
       len=unique(obj.lengrid(refwlist));
       if length(len)>1
@@ -273,7 +279,7 @@ classdef QPCR < handle
       if ~isKey(obj.refs,ref)
         error('setref: Reference %s has not been defined using addref()\n', ref);
       end
-      wlist=obj.parsewells(wells);
+      wlist=obj.parsewells(wells(:));
       for i=1:length(wlist)
         if ~isempty(obj.primers{wlist(i)}) && ~strcmp(obj.primers{wlist(i)},ref)
           error('setref: Attempted to set reference for well %s to %s, but was previously set to reference %s\n', obj.wellnames{wlist(i)}, ref, obj.primers{wlist(i)});
@@ -346,11 +352,11 @@ classdef QPCR < handle
         s(sampname)=struct('name',sampname,'wells',{wellnms},'ct',ct(i,sel),'conc',conc(i),'cilow',cilow(i),'cihigh',cihigh(i));
       end
       % Correct for length, dilution, strands
-      if ~isnan(args.length)
-        obj.lengrid(wlist(:))=args.length;
-      end
       r=obj.refs(ref);
       w1=w1(:);
+      if ~isnan(args.length)
+        obj.lengrid(w1)=args.length;
+      end
       conc=conc.*(obj.dilgrid(w1)/r.dilution)./(obj.lengrid(w1)/r.len)./(obj.strandgrid(w1)/r.strands);
       cilow=cilow.*(obj.dilgrid(w1)/r.dilution)./(obj.lengrid(w1)/r.len)./(obj.strandgrid(w1)/r.strands);
       cihigh=cihigh.*(obj.dilgrid(w1)/r.dilution)./(obj.lengrid(w1)/r.len)./(obj.strandgrid(w1)/r.strands);
