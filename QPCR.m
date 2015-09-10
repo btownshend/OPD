@@ -414,6 +414,8 @@ classdef QPCR < handle
         subplot(ny,nx,i);
         c=axis;
         c(1:2)=bnds(r.units);
+        c(4)=30;
+        c(3)=5;
         axis(c);
       end
     end
