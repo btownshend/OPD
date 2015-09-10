@@ -299,7 +299,7 @@ classdef QPCR < handle
     end
     
     function [conc,cilow,cihigh]=getconc(obj,ref,rep1,rep2,rep3,rep4,varargin)
-      defaults=struct('length',nan,'dilution',nan,'strands',[]);
+      defaults=struct('length',nan,'dilution',[],'strands',[]);
       args=processargs(defaults,varargin);
       w1=obj.parsewells(rep1);
       wells=w1(:);
@@ -354,6 +354,9 @@ classdef QPCR < handle
       % Correct for length, dilution, strands
       r=obj.refs(ref);
       w1=w1(:);
+      if ~isempty(args.dilution)
+        obj.dilgrid(w1)=args.dilution;
+      end
       if ~isnan(args.length)
         obj.lengrid(w1)=args.length;
       end
