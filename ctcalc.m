@@ -1,11 +1,11 @@
 % Calculate the Ct's
 function opd=ctcalc(opd,varargin)
-defaults=struct('basecycles',2:8,'thresh',nan,'doplot',false,'debug',false,'samps',[]);
+defaults=struct('basecycles',2:8,'thresh',nan,'doplot',false,'debug',false,'samps',[],'maxcterror',0.4);
 args=processargs(defaults,varargin);
+wellnms=wellnames(opd);
 if isempty(args.samps)
   fu=squeeze(opd.avg.scaled);
 else
-  wellnms=wellnames(opd);
   w=[];
   for i=1:length(args.samps)
     f=find(strcmp(args.samps{i},wellnms));
@@ -50,6 +50,8 @@ for i=1:size(fu,2)
       sel(fu(:,i)<0)=false;
       cntr=1:size(fu,1);
       fit=polyfit(log10(fu(sel,i)),cntr(sel)',1);
+      ctpred=polyval(fit,log10(fu(sel,i)));
+      rmserror=sqrt(mean((cntr(sel)'-ctpred).^2));
       ct(i)=polyval(fit,log10(args.thresh));
       fuexp(sel,i)=fu(sel,i);
       emin=min(estart,emin);
@@ -58,14 +60,20 @@ for i=1:size(fu,2)
       estart=nan;
       elast=nan;
       fit=[nan,nan];
+      rmserror=nan;
     end
     if args.debug
-      fprintf('Sample %d: baseline=%.1f [%d-%d], max=%.1f, estart=%d, elast=%d, fit=(%f,%f), ct=%.1f\n', i, baseline, min(basecycles), max(basecycles), max(fu(:,i)), estart, elast,fit,ct(i));
+      fprintf('Sample %d: baseline=%.1f [%d-%d], max=%.1f, estart=%d, elast=%d, fit=(%f,%f), ct=%.1f rmserr=%.1f\n', i, baseline, min(basecycles), max(basecycles), max(fu(:,i)), estart, elast,fit,ct(i),rmserror);
     end
     if baseredo==1 && isfinite(estart)
       basecycles=max(min(args.basecycles),estart-8):(estart-2);
     end
   end
+  if rmserror>args.maxcterror  || abs(fit(1)-3.7)>1
+    fprintf('Bad fit: Sample %d: baseline=%.1f [%d-%d], max=%.1f, estart=%d, elast=%d, fit=(%f,%f), ct=%.1f rmserr=%.1f\n', i, baseline, min(basecycles), max(basecycles), max(fu(:,i)), estart, elast,fit,ct(i),rmserror);
+    ct(i)=nan;
+  end
+  opd.fit(i,:)=fit;
 end
 opd.ct=ct;
 
@@ -101,7 +109,7 @@ if args.doplot
   subplot(212);
   semilogy(fu,'y');
   hold on;
-  semilogy(fuexp,'.-');
+  semilogy(fuexp(:,isfinite(ct)),'.-');
   hold on;
   plot(ct,0*ct+args.thresh,'o');
   if any(isfinite(fuexp(:)))
