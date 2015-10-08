@@ -12,7 +12,8 @@ for j='A':'H'
 end
 
 c=wf;
-c(9,13)=nan;
+c(9,:)=nan;
+c(:,13)=nan;
 pcolor(c);
 axis ij;
 title('Well Factors');
