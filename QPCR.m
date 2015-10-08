@@ -47,10 +47,14 @@ classdef QPCR < handle
   
   methods
     function obj=QPCR(ctgrid,varargin)
-      defaults=struct('extrapolate',true,'ci',80,'minct',7,'dilgrid',[],'lengrid',[],'strandgrid',[]);
+      defaults=struct('extrapolate',true,'ci',80,'minct',7,'dilgrid',[],'lengrid',[],'strandgrid',[],'plate2',[]);
       args=processargs(defaults,varargin);
 
       obj.options=rmfield(args,{'dilgrid','lengrid','strandgrid'});
+      if ~isempty(args.plate2)
+        % Append a second plate
+        ctgrid=[ctgrid,args.plate2];
+      end
       obj.ctgrid=ctgrid;
       if isempty(args.dilgrid)
         obj.dilgrid=ones(size(ctgrid));
