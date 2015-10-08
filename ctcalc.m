@@ -18,7 +18,7 @@ else
 end
 
 fulow=4*mean(std(fu(args.basecycles,:),1));
-if isnan(args.thresh)
+if isempty(args.thresh) || isnan(args.thresh)
   args.thresh=fulow*2;
 else
   fulow=args.thresh/2;
@@ -94,7 +94,7 @@ for j='A':'H'
 end
 
 if args.doplot
-  setfig('ctplot'); clf;
+  setfig(opd.filename); clf;
   subplot(211);
   plot(fu);
   hold on;
@@ -106,12 +106,15 @@ if args.doplot
   if ~isempty(args.samps) && length(args.samps)<20
     legend(args.samps,'Location','EastOutside');
   end
+  title(opd.filename);
   subplot(212);
   semilogy(fu,'y');
   hold on;
+  semilogy(fu(:,~isfinite(ct)),'m');
   semilogy(fuexp(:,isfinite(ct)),'.-');
-  hold on;
   plot(ct,0*ct+args.thresh,'o');
+  plot([c(1),c(2)],fulow*[1,1],':');
+  plot([c(1),c(2)],fuhigh*[1,1],':');
   if any(isfinite(fuexp(:)))
     % axis([emin,emax,nanmin(fuexp(:)),nanmax(fuexp(:))]);
   end
