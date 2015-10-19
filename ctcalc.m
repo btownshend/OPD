@@ -1,6 +1,6 @@
 % Calculate the Ct's
 function opd=ctcalc(opd,varargin)
-defaults=struct('basecycles',2:8,'thresh',nan,'doplot',false,'debug',false,'samps',[],'maxcterror',0.4);
+defaults=struct('basecycles',2:8,'thresh',nan,'doplot',false,'debug',false,'samps',[],'maxcterror',0.4,'fulow',[],'fuhigh',[]);
 args=processargs(defaults,varargin);
 wellnms=wellnames(opd);
 if isempty(args.samps)
@@ -17,15 +17,22 @@ else
   fu=squeeze(opd.avg.scaled(:,:,sampsel));
 end
 
-fulow=4*mean(std(fu(args.basecycles,:),1));
-if isempty(args.thresh) || isnan(args.thresh)
-  args.thresh=fulow*2;
-else
-  fulow=args.thresh/2;
+if isempty(args.fulow) || isnan(args.fulow)
+  if isempty(args.thresh) || isnan(args.thresh)
+    args.fulow=4*mean(std(fu(args.basecycles,:),1));
+  else
+    args.fulow=args.thresh/2;
+  end
 end
-fuhigh=args.thresh*4;
+if isempty(args.thresh) || isnan(args.thresh)
+  args.thresh=args.fulow*2;
+end
+if isempty(args.fuhigh) || isnan(args.fuhigh)
+  args.fuhigh=args.thresh*4;
+end
+
 if (args.debug)
-  fprintf('Thresh=%.1f, FU(low)=%.1f, FU(high)=%.1f\n', args.thresh, fulow, fuhigh);
+  fprintf('Thresh=%.1f, FU(low)=%.1f, FU(high)=%.1f\n', args.thresh, args.fulow, args.fuhigh);
 end
 
 % Loop over each trace
@@ -37,9 +44,9 @@ for i=1:size(fu,2)
   for baseredo=1:2
     baseline=prctile(fu(basecycles,i),25);
     fu(:,i)=fu(:,i)-baseline;
-    estart=find(fu(:,i)>fulow & (1:size(fu,1))'>max(basecycles),1);
+    estart=find(fu(:,i)>args.fulow & (1:size(fu,1))'>max(basecycles),1);
     if ~isempty(estart)
-      elast=find(fu(estart:end,i)>fuhigh,1);
+      elast=find(fu(estart:end,i)>args.fuhigh,1);
       if isempty(elast)
         elast=size(fu,1);
       else
@@ -69,8 +76,9 @@ for i=1:size(fu,2)
       basecycles=max(min(args.basecycles),estart-8):(estart-2);
     end
   end
-  if rmserror>args.maxcterror  || abs(fit(1)-3.7)>1
-    fprintf('Bad fit: Sample %d: baseline=%.1f [%d-%d], max=%.1f, estart=%d, elast=%d, fit=(%f,%f), ct=%.1f rmserr=%.1f\n', i, baseline, min(basecycles), max(basecycles), max(fu(:,i)), estart, elast,fit,ct(i),rmserror);
+  eff=10^(1/fit(1));
+  if rmserror>args.maxcterror  || abs(eff-1.8)>0.4
+    fprintf('Bad fit: Sample %d: baseline=%.1f [%d-%d], max=%.1f, estart=%d, elast=%d, eff=%.2f, (acceptable is 1.4-2.2), ct=%.1f rmserr=%.1f (max=%.1f)\n', i, baseline, min(basecycles), max(basecycles), max(fu(:,i)), estart, elast,eff,ct(i),rmserror,args.maxcterror);
     ct(i)=nan;
   end
   opd.fit(i,:)=fit;
@@ -99,8 +107,8 @@ if args.doplot
   plot(fu);
   hold on;
   c=axis;
-  plot([c(1),c(2)],fulow*[1,1],':');
-  plot([c(1),c(2)],fuhigh*[1,1],':');
+  plot([c(1),c(2)],args.fulow*[1,1],':');
+  plot([c(1),c(2)],args.fuhigh*[1,1],':');
   plot(args.basecycles(1)*[1,1],[c(3),c(4)],':');
   plot(args.basecycles(end)*[1,1],[c(3),c(4)],':');
   if ~isempty(args.samps) && length(args.samps)<20
@@ -113,8 +121,8 @@ if args.doplot
   semilogy(fu(:,~isfinite(ct)),'m');
   semilogy(fuexp(:,isfinite(ct)),'.-');
   plot(ct,0*ct+args.thresh,'o');
-  plot([c(1),c(2)],fulow*[1,1],':');
-  plot([c(1),c(2)],fuhigh*[1,1],':');
+  plot([c(1),c(2)],args.fulow*[1,1],':');
+  plot([c(1),c(2)],args.fuhigh*[1,1],':');
   if any(isfinite(fuexp(:)))
     % axis([emin,emax,nanmin(fuexp(:)),nanmax(fuexp(:))]);
   end
