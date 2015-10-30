@@ -77,8 +77,8 @@ for i=1:size(fu,2)
     end
   end
   eff=10^(1/fit(1));
-  if rmserror>args.maxcterror  || abs(eff-1.8)>0.4
-    fprintf('Bad fit: Sample %d: baseline=%.1f [%d-%d], max=%.1f, estart=%d, elast=%d, eff=%.2f, (acceptable is 1.4-2.2), ct=%.1f rmserr=%.1f (max=%.1f)\n', i, baseline, min(basecycles), max(basecycles), max(fu(:,i)), estart, elast,eff,ct(i),rmserror,args.maxcterror);
+  if rmserror>args.maxcterror  || abs(eff-1.8)>0.5
+    fprintf('Bad fit: Sample %d: baseline=%.1f [%d-%d], max=%.1f, estart=%d, elast=%d, eff=%.2f, (acceptable is 1.3-2.3), ct=%.1f rmserr=%.1f (max=%.1f)\n', i, baseline, min(basecycles), max(basecycles), max(fu(:,i)), estart, elast,eff,ct(i),rmserror,args.maxcterror);
     ct(i)=nan;
   end
   opd.fit(i,:)=fit;
