@@ -41,7 +41,7 @@ ct=nan(1,size(fu,2));
 emin=12; emax=12;
 for i=1:size(fu,2)
   basecycles=args.basecycles;
-  for baseredo=1:2
+  for baseredo=1:3
     baseline=prctile(fu(basecycles,i),25);
     fu(:,i)=fu(:,i)-baseline;
     estart=find(fu(:,i)>args.fulow & (1:size(fu,1))'>max(basecycles),1);
@@ -50,7 +50,7 @@ for i=1:size(fu,2)
       if isempty(elast)
         elast=size(fu,1);
       else
-        elast=elast+estart-1;
+        elast=elast+estart-2;
       end
       sel=false(size(fu,1),1);
       sel(estart:elast)=true;
@@ -61,6 +61,7 @@ for i=1:size(fu,2)
       rmserror=sqrt(mean((cntr(sel)'-ctpred).^2));
       ct(i)=polyval(fit,log10(args.thresh));
       fuexp(sel,i)=fu(sel,i);
+      fuexp(~sel,i)=nan;
       emin=min(estart,emin);
       emax=max(elast,emax);
     else
@@ -73,12 +74,12 @@ for i=1:size(fu,2)
       fprintf('Sample %d: baseline=%.1f [%d-%d], max=%.1f, estart=%d, elast=%d, fit=(%f,%f), ct=%.1f rmserr=%.1f\n', i, baseline, min(basecycles), max(basecycles), max(fu(:,i)), estart, elast,fit,ct(i),rmserror);
     end
     if baseredo==1 && isfinite(estart)
-      basecycles=max(min(args.basecycles),estart-8):(estart-2);
+      basecycles=max(min(args.basecycles),estart-6):(estart-1);
     end
   end
   eff=10^(1/fit(1));
-  if rmserror>args.maxcterror  || abs(eff-1.8)>0.5
-    fprintf('Bad fit: Sample %d: baseline=%.1f [%d-%d], max=%.1f, estart=%d, elast=%d, eff=%.2f, (acceptable is 1.3-2.3), ct=%.1f rmserr=%.1f (max=%.1f)\n', i, baseline, min(basecycles), max(basecycles), max(fu(:,i)), estart, elast,eff,ct(i),rmserror,args.maxcterror);
+  if rmserror>args.maxcterror  || eff<1.3 || eff>2.5
+    fprintf('Bad fit: Sample %d: baseline=%.1f [%d-%d], max=%.1f, estart=%d, elast=%d, eff=%.2f, (acceptable is 1.3-2.5), ct=%.1f rmserr=%.1f (max=%.1f)\n', i, baseline, min(basecycles), max(basecycles), max(fu(:,i)), estart, elast,eff,ct(i),rmserror,args.maxcterror);
     ct(i)=nan;
   end
   opd.fit(i,:)=fit;
@@ -126,7 +127,7 @@ if args.doplot
   if any(isfinite(fuexp(:)))
     % axis([emin,emax,nanmin(fuexp(:)),nanmax(fuexp(:))]);
   end
-  c=axis; c(3)=10; axis(c);
+  c=axis; c(3)=args.fulow/10; axis(c);
   w=wellnames(opd);
   if ~isempty(args.samps)
     w=args.samps;
