@@ -342,6 +342,7 @@ classdef QPCR < handle
         end
       end
       [conc,cilow,cihigh]=obj.getconcfromct(ref,ct);
+
       s=obj.refs(ref).samples;
       for i=1:length(conc)
         sel=isfinite(ct(i,:));
@@ -472,6 +473,7 @@ classdef QPCR < handle
       
       % Overlay data for samples that use this reference
       sampkeys=r.samples.keys;
+      allconcs=r.concs;
       for i=1:length(sampkeys)
         s=r.samples(sampkeys{i});
         hh=plot(s.conc,nanmean(s.ct),'xb');
@@ -479,6 +481,7 @@ classdef QPCR < handle
         plot(s.conc*ones(1,length(s.ct)),s.ct,'ob');
         plot(s.conc*[1,1],[nanmin(s.ct),nanmax(s.ct)],'-b');
         text(s.cihigh*1.05,nanmean(s.ct),s.name);
+        allconcs(end+1)=s.conc;
       end
       if length(sampkeys)>0
         leg{end+1}='Sample';
@@ -486,8 +489,8 @@ classdef QPCR < handle
       end
 
       c=axis;
-      c(1)=max(c(1),min(r.concs)/10);
-      c(2)=min(c(2),max(r.concs)*10);
+      c(1)=max(c(1),min(allconcs(allconcs>0))/10);
+      c(2)=min(c(2),max(allconcs(allconcs>0))*10);
       axis(c);
 
       legend(h,leg);
