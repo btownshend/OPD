@@ -197,10 +197,10 @@ classdef QPCR < handle
 
       % Compute limit of detection
       if isempty(ctwater)
-        ctlod=max(ct)+1;
+        ctlod=max([ct;19])+1;
         fprintf('Warning: Missing "water" sample(s) for primer %s -- assuming maximum CT of %.1f\n',primer,ctlod);
       elseif all(isnan(ctwater))
-        ctlod=max(ct)+1;
+        ctlod=max([ct;19])+1;
         fprintf('Warning: No Ct returned for "water" sample(s) for primer %s -- assuming maximum CT of %.1f\n',primer,ctlod);
       else
         ctlod=min(ctwater);
