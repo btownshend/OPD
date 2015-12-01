@@ -210,7 +210,8 @@ classdef QPCR < handle
       minconc=min(refconcs(ctsel&refconcs>0));
       maxconc=max(refconcs(ctsel));
       if isempty(minconc)
-        error('No Ct values for any concentrations of reference for primer %s\n', primer);
+        fprintf('No Ct values for any concentrations of reference for primer %s\n', primer);
+        return;
       end
       concsel=refconcs>=minconc & refconcs<=maxconc & isfinite(ct);
       obj.refs(primer)=struct('name',primer,'wells',refwlist(refconcs>0),'welldescr',{obj.getwellnames(refwlist(refconcs>0))},'ct',ct(refconcs>0),'concs',refconcs(refconcs>0),'units',args.units,'ctwater',ctwater,'samples',containers.Map(),'len',len,'dilution',dilution,'strands',strands);
