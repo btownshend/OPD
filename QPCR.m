@@ -31,6 +31,7 @@ classdef QPCR < handle
     function [c,clow,chigh]=concsub(c1,c1low,c1high,c2,c2low,c2high)
     % Subtract concentrations including confidence intervals
       c=max(0,c1-c2);
+      c(~isfinite(c1) | ~isfinite(c2))=nan;
       clow=max(0,c-sqrt((c1low-c1).^2+(c2low-c2).^2));
       chigh=c+sqrt((c1high-c1).^2+(c2high-c2).^2);
     end
