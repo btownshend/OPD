@@ -71,7 +71,7 @@ for i=1:size(fu,2)
       rmserror=nan;
     end
     if args.debug
-      fprintf('Sample %d: baseline=%.1f [%d-%d], max=%.1f, estart=%d, elast=%d, fit=(%f,%f), ct=%.1f rmserr=%.1f\n', i, baseline, min(basecycles), max(basecycles), max(fu(:,i)), estart, elast,fit,ct(i),rmserror);
+      fprintf('Sample %s: baseline=%.1f [%d-%d], max=%.1f, estart=%d, elast=%d, fit=(%f,%f), ct=%.1f rmserr=%.1f\n', wellnms{i}, baseline, min(basecycles), max(basecycles), max(fu(:,i)), estart, elast,fit,ct(i),rmserror);
     end
     if baseredo==1 && isfinite(estart)
       basecycles=max(min(args.basecycles),estart-6):(estart-1);
@@ -79,7 +79,7 @@ for i=1:size(fu,2)
   end
   eff=10^(1/fit(1));
   if rmserror>args.maxcterror  || eff<1.3 || eff>2.5
-    fprintf('Bad fit: Sample %d: baseline=%.1f [%d-%d], max=%.1f, estart=%d, elast=%d, eff=%.2f, (acceptable is 1.3-2.5), ct=%.1f rmserr=%.1f (max=%.1f)\n', i, baseline, min(basecycles), max(basecycles), max(fu(:,i)), estart, elast,eff,ct(i),rmserror,args.maxcterror);
+    fprintf('Bad fit: Sample %s: baseline=%.1f [%d-%d], max=%.1f, estart=%d, elast=%d, eff=%.2f, (acceptable is 1.3-2.5), ct=%.1f rmserr=%.1f (max=%.1f)\n', wellnms{i}, baseline, min(basecycles), max(basecycles), max(fu(:,i)), estart, elast,eff,ct(i),rmserror,args.maxcterror);
     ct(i)=nan;
   end
   opd.fit(i,:)=fit;
