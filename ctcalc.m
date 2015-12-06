@@ -124,7 +124,9 @@ if args.doplot
   plot(ct,0*ct+args.thresh,'o');
   plot([c(1),c(2)],args.fulow*[1,1],':');
   plot([c(1),c(2)],args.fuhigh*[1,1],':');
-  c=axis; c(3)=args.fulow/10; axis(c);
+  %ylim=get(gca,'YLim');
+  ylim=[args.fulow/10,max(args.fuhigh,max(fu(:)))*1.1]; 
+  set(gca,'YLim',ylim);
   
   subplot(313);
   failed=~isfinite(ct);
