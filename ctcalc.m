@@ -138,19 +138,19 @@ if args.doplot
   %   end
   % end  
 
-  fprintf('\t');
+  fprintf('  ');
   for i=1:12
-    fprintf('%d\t',i);
+    fprintf('    %2d ',i);
   end
   fprintf('\n');
   for j='A':'H'
-    fprintf('%c\t',j);
+    fprintf('%c ',j);
     for i=1:12
       ind=find(strcmp(w,sprintf('%c%d',j,i)));
       if isempty(ind)
-        fprintf('\t');
+        fprintf('       ');
       else
-        fprintf('%.2f\t',ct(ind));
+        fprintf(' %5.2f ',ct(ind));
       end
     end
     fprintf('\n');  
