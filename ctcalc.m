@@ -103,7 +103,7 @@ end
 
 if args.doplot
   setfig(opd.filename); clf;
-  subplot(211);
+  subplot(311);
   plot(fu);
   hold on;
   c=axis;
@@ -115,7 +115,8 @@ if args.doplot
     legend(args.samps,'Location','EastOutside');
   end
   title(opd.filename);
-  subplot(212);
+
+  subplot(312);
   semilogy(fu,'y');
   hold on;
   semilogy(fu(:,~isfinite(ct)),'m');
@@ -124,7 +125,17 @@ if args.doplot
   plot([c(1),c(2)],args.fulow*[1,1],':');
   plot([c(1),c(2)],args.fuhigh*[1,1],':');
   c=axis; c(3)=args.fulow/10; axis(c);
+  
+  subplot(313);
+  failed=~isfinite(ct);
+  plot(fu(:,~isfinite(ct)));
+  hold on;
+  plot([c(1),c(2)],args.fulow*[1,1],':k');
+  plot([c(1),c(2)],args.fuhigh*[1,1],':k');
+  %c=axis; c(3)=args.fulow/10; axis(c);
   w=wellnames(opd);
+  legend(w(~isfinite(ct)));
+  
   if ~isempty(args.samps)
     w=args.samps;
   end
