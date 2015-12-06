@@ -62,6 +62,7 @@ for i=1:size(fu,2)
       fuexp(sel,i)=fu(sel,i);
       fuexp(~sel,i)=nan;
     else
+      fprintf('No exponential range found for sample %s: baseline=%.2fx+%.1f [%d-%d], max=%.1f, estart=%d\n', wellnms{i}, poly, min(args.basecycles), lastbaseline, max(fu(:,i)), estart);
       estart=nan;
       elast=nan;
       fit=[nan,nan];
@@ -77,7 +78,7 @@ for i=1:size(fu,2)
   end
   eff=10^(1/fit(1));
   if rmserror>args.maxcterror  || eff<1.3 || eff>2.5
-    fprintf('Bad fit: Sample %s: baseline=%.1f [%d-%d], max=%.1f, estart=%d, elast=%d, eff=%.2f, (acceptable is 1.3-2.5), ct=%.1f rmserr=%.1f (max=%.1f)\n', wellnms{i}, baseline, min(basecycles), max(basecycles), max(fu(:,i)), estart, elast,eff,ct(i),rmserror,args.maxcterror);
+    fprintf('Bad fit: Sample %s: baseline=%.2fx+%.1f [%d-%d], max=%.1f, estart=%d, elast=%d, eff=%.2f, (acceptable is 1.3-2.5), ct=%.1f rmserr=%.1f (max=%.1f)\n', wellnms{i}, poly, min(args.basecycles), lastbaseline, max(fu(:,i)), estart, elast,eff,ct(i),rmserror,args.maxcterror);
     ct(i)=nan;
   end
   opd.fit(i,:)=fit;
