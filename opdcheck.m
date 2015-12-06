@@ -1,6 +1,6 @@
 % Check out OPD data to see if it makes sense
 function opdcheck(v,samps,varargin)
-defaults=struct('firststage',false);
+defaults=struct('firststage',false,'basecycles',[],'thresh',[]);
 args=processargs(defaults,varargin);
 wellnms=wellnames(v);
 if nargin<2
@@ -19,6 +19,7 @@ else
 end
   
 pnum=1;
+clf;
 for stage=1:length(v.stageavg)
   avg=v.stageavg{stage};
   delta=(avg.temp(end)-avg.temp(1))>1;
@@ -27,12 +28,6 @@ for stage=1:length(v.stageavg)
     if ~args.firststage && (length(v.stageavg)>1 || size(avg.scaled,2)>1)
       subplot(length(v.stageavg),size(avg.scaled,2),pnum);
       pnum=pnum+1;
-    end
-    if 0 && stage==1 && size(s,1)>10
-      % Subtract out baseline
-      for k=1:size(s,2)
-        s(:,k)=s(:,k)-mean(s(2:7,k));
-      end
     end
     if delta
       [b,a]=butter(12,0.3);
@@ -47,9 +42,28 @@ for stage=1:length(v.stageavg)
       ylabel('-d(Fluorescence)/d(Cycle)');
       xlabel('Temp (C)');
     else
+      if ~isempty(args.basecycles) && stage==1 && size(s,1)>max(args.basecycles)
+        % Subtract out baseline
+        for k=1:size(s,2)
+          s(:,k)=s(:,k)-mean(s(args.basecycles,k));
+        end
+      end
       plot(avg.cycle,s,'-');
       ylabel('Fluorescence');
       xlabel('Cycle');
+      if ~isempty(args.basecycles) && stage==1
+        hold on;
+        c=axis;
+        plot(min(args.basecycles-.5)*[1,1],c(3:4),':k');
+        plot(max(args.basecycles+.5)*[1,1],c(3:4),':k');
+        axis(c);
+      end
+      if ~isempty(args.thresh)
+        hold on;
+        c=axis;
+        plot(c(1:2),args.thresh*[1,1],':k');
+        axis(c);
+      end
     end
     title(sprintf('%s - %s',v.filename,v.WFFP(dye).dye));
     if stage==1
