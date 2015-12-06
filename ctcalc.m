@@ -38,7 +38,6 @@ end
 % Loop over each trace
 fuexp=nan(size(fu));
 ct=nan(1,size(fu,2));
-emin=12; emax=12;
 for i=1:size(fu,2)
   basecycles=args.basecycles;
   for baseredo=1:3
@@ -62,8 +61,6 @@ for i=1:size(fu,2)
       ct(i)=polyval(fit,log10(args.thresh));
       fuexp(sel,i)=fu(sel,i);
       fuexp(~sel,i)=nan;
-      emin=min(estart,emin);
-      emax=max(elast,emax);
     else
       estart=nan;
       elast=nan;
@@ -74,6 +71,7 @@ for i=1:size(fu,2)
       fprintf('Sample %s: baseline=%.1f [%d-%d], max=%.1f, estart=%d, elast=%d, fit=(%f,%f), ct=%.1f rmserr=%.1f\n', wellnms{i}, baseline, min(basecycles), max(basecycles), max(fu(:,i)), estart, elast,fit,ct(i),rmserror);
     end
     if baseredo==1 && isfinite(estart)
+      % Reset the base cycles to just before the area of interest
       basecycles=max(min(args.basecycles),estart-6):(estart-1);
     end
   end
@@ -124,9 +122,6 @@ if args.doplot
   plot(ct,0*ct+args.thresh,'o');
   plot([c(1),c(2)],args.fulow*[1,1],':');
   plot([c(1),c(2)],args.fuhigh*[1,1],':');
-  if any(isfinite(fuexp(:)))
-    % axis([emin,emax,nanmin(fuexp(:)),nanmax(fuexp(:))]);
-  end
   c=axis; c(3)=args.fulow/10; axis(c);
   w=wellnames(opd);
   if ~isempty(args.samps)
