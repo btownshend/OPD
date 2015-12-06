@@ -20,7 +20,7 @@ sel=(v.all.stage==stage);
 temp=[v.data(sel).temperature1];
 trange=max(temp)-min(temp);
 npoints=sum(sel);
-fprintf('Taking melt data from cycle %d: npoints=%d, temp=%.1f-%.1f\n',stage,npoints,min(temp),max(temp));
+%fprintf('Taking melt data from cycle %d: npoints=%d, temp=%.1f-%.1f\n',stage,npoints,min(temp),max(temp));
 %setfig('response');clf;
 %freqz(filtb,filta);
 rtemp=round(temp);
@@ -61,7 +61,8 @@ for dye=1:size(v.all.scaled,2)
   xlabel('Temperature');
   ylabel('Fraction melting/deg');
   title(sprintf('%s - %s',v.filename,v.WFFP(dye).dye));
-  if length(wellnames(wells))<20
+  %fprintf('Length(wells)=%d\n',length(wells));
+  if length(wellnames(wells))<=20
     legend(wellnames{wells},'Location','NorthWest');
   end
 end

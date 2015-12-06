@@ -86,7 +86,7 @@ for stage=unique(all.stage)
   avg=struct();
   stagesel=all.stage==stage;
   if any(~stagesel)
-    fprintf('Using only %d/%d samples that are for stage %d\n', sum(stagesel),length(stagesel),stage);
+    %fprintf('Using only %d/%d samples that are for stage %d\n', sum(stagesel),length(stagesel),stage);
   end
 
   avg.cycle=unique(floor(all.cycle(stagesel)));
