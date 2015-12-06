@@ -39,21 +39,23 @@ end
 fuexp=nan(size(fu));
 ct=nan(1,size(fu,2));
 for i=1:size(fu,2)
-  basecycles=args.basecycles;
-  for baseredo=1:3
-    baseline=prctile(fu(basecycles,i),25);
-    fu(:,i)=fu(:,i)-baseline;
-    estart=find(fu(:,i)>args.fulow & (1:size(fu,1))'>max(basecycles),1);
-    if ~isempty(estart)
-      elast=find(fu(estart:end,i)>args.fuhigh,1);
-      if isempty(elast)
-        elast=size(fu,1);
-      else
-        elast=elast+estart-2;
-      end
-      sel=false(size(fu,1),1);
-      sel(estart:elast)=true;
-      sel(fu(:,i)<0)=false;
+  [baseline,poly,lastbaseline,basestd]=findbase(fu(:,i),'basecycles',args.basecycles,'debug',args.debug,'doplot',args.doplot&&size(fu,2)==1);
+  fu(:,i)=fu(:,i)-baseline;
+  if args.fulow<basestd*3
+    fprintf('ctcalc: Sample %s: Warning: fulow (%.0f) < baseline stdev*3 (=%.1f)\n', wellnms{i}, args.fulow, 3*basestd);
+  end
+  estart=find(fu(:,i)>args.fulow & (1:size(fu,1))'>lastbaseline,1);
+  if ~isempty(estart)
+    elast=find(fu(estart:end,i)>min(args.fuhigh,max(fu(:,i))/2),1);
+    if isempty(elast)
+      elast=size(fu,1);
+    else
+      elast=elast+estart-2;
+    end
+    sel=false(size(fu,1),1);
+    sel(estart:elast)=true;
+    sel(fu(:,i)<0)=false;
+    if sum(sel)>=2
       cntr=1:size(fu,1);
       fit=polyfit(log10(fu(sel,i)),cntr(sel)',1);
       ctpred=polyval(fit,log10(fu(sel,i)));
@@ -68,13 +70,15 @@ for i=1:size(fu,2)
       fit=[nan,nan];
       rmserror=nan;
     end
-    if args.debug
-      fprintf('Sample %s: baseline=%.1f [%d-%d], max=%.1f, estart=%d, elast=%d, fit=(%f,%f), ct=%.1f rmserr=%.1f\n', wellnms{i}, baseline, min(basecycles), max(basecycles), max(fu(:,i)), estart, elast,fit,ct(i),rmserror);
-    end
-    if baseredo==1 && isfinite(estart)
-      % Reset the base cycles to just before the area of interest
-      basecycles=max(min(args.basecycles),estart-6):(estart-1);
-    end
+  else
+    fprintf('No exponential range found for sample %s: baseline=%.2fx+%.1f [%d-%d], max=%.1f\n', wellnms{i}, poly, min(args.basecycles), lastbaseline, max(fu(:,i)));
+    estart=nan;
+    elast=nan;
+    fit=[nan,nan];
+    rmserror=nan;
+  end
+  if args.debug
+    fprintf('Sample %s: baseline=%.2fx+%.1f [%d-%d], max=%.1f, estart=%d, elast=%d, fit=(%f,%f), ct=%.1f rmserr=%.1f\n', wellnms{i}, poly, min(args.basecycles),lastbaseline, max(fu(:,i)), estart, elast,fit,ct(i),rmserror);
   end
   eff=10^(1/fit(1));
   if rmserror>args.maxcterror  || eff<1.3 || eff>2.5
