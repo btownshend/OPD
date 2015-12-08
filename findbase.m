@@ -40,7 +40,7 @@ if isinf(beststd)
   bval=prctile(x,10);
   bestbaseline=ones(size(x))*bval;
   fprintf('findbase: Warning: Unable to identify slope of base, using %.0f as baseline\n',bval);
-  bestpoly=[1,bval];
+  bestpoly=[0,bval];
   bestlast=max(find(x<bestbaseline));
 end
 if bestpoly(1)>args.maxslope || bestpoly(1)<args.minslope
