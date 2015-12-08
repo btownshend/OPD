@@ -1,8 +1,62 @@
 % opdread - Read a bio-rad OPD file (from iCycler)
-function x=opdread(file)
-if nargin<1
-  file=opdlocate()
+% If a filename is given, use it in local directory if it exists
+% If filename is empty or not provided, check for a file in current directory
+% If there isn't any file in current directory then use newest in server directory
+% If 'copyfromserver' is set, and the file in server directory is newer or the local file doesn't exist, then
+%  copy from there
+function x=opdread(file,varargin)
+defaults=struct('copyfromserver',true);
+args=processargs(defaults,varargin);
+if nargin<1 || isempty(file)
+  file='Data *';
 end
+
+% Check for local data file
+localfile=dir(file);
+if length(localfile)<1
+  fprintf('Data file "%s" not found in local directory, checking server...\n',file);
+elseif length(localfile)>1
+  error('Multiple data files in local directory matching "%s"\n',file);
+else
+  file=localfile.name;
+  fprintf('Found local file: %s\n', file);
+end
+
+dname='/Volumes/smolke-lab$/Brent';
+if exist(dname,'dir') && (isempty(localfile) || args.copyfromserver)
+  remotefilename=[dname,'/',file];
+  remotefile=dir(remotefilename);
+  if length(remotefile)<1
+    error('No remote files found matching %s\n',remotefilename);
+  end
+  [~,ord]=sort(datenum({remotefile.date}));
+  remotefile=remotefile(ord(end));
+  fprintf('Remote file: %s\n',remotefilename);
+  if ~isempty(localfile) && remotefile.bytes==localfile.bytes
+    fprintf('Remote file has same size as localfile, not copying\n');
+  elseif ~isempty(localfile) && remotefile.datenum<localfile.datenum
+    fprintf('Local file is newer, not copying\n');
+  else
+    if isempty(localfile)
+      file=[dname,'/',remotefile.name];
+    end
+    if args.copyfromserver
+      cmd=sprintf('cp -p "%s" .',[dname,'/',remotefile.name]);
+      fprintf('Executing <%s> ...',cmd);
+      [s,r]=system(cmd);
+      if s~=0
+        error(r);
+      else
+        fprintf('done\n');
+      end
+    end
+  end
+end
+
+if isempty(localfile) && ~exist(dname)
+  error('Local file "%s" does not exist and smolke server not mounted\n',file);
+end
+
 [fd,msg]=fopen(file,'r','ieee-le');
 if fd==-1
   error('Unable to open %s: %s',file,msg);
