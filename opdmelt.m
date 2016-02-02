@@ -10,7 +10,12 @@ end
 if iscell(wells)
   w=[];
   for i=1:length(wells)
-    w(end+1)=find(strcmp(wells{i},wellnames));
+    nw=find(strcmp(wells{i},wellnames));
+    if isempty(nw)
+      fprintf('Well %s not present in OPD file -- ignoring\n');
+    else
+      w(end+1)=nw;
+    end
   end
   wells=w;
 end
