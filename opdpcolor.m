@@ -1,6 +1,6 @@
 % Draw a pcolor plot of the OPD Ct's
 function opdpcolor(opd)
-clf;
+%clf;
 cttmp=opd.ctgrid;
 cttmp(9,:)=nan;
 cttmp(:,13)=nan;
