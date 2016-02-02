@@ -27,27 +27,28 @@ if exist(dname,'dir') && (isempty(localfile) || args.copyfromserver)
   remotefilename=[dname,'/',file];
   remotefile=dir(remotefilename);
   if length(remotefile)<1
-    error('No remote files found matching %s\n',remotefilename);
-  end
-  [~,ord]=sort(datenum({remotefile.date}));
-  remotefile=remotefile(ord(end));
-  fprintf('Remote file: %s\n',remotefilename);
-  if ~isempty(localfile) && remotefile.bytes==localfile.bytes
-    fprintf('Remote file has same size as localfile, not copying\n');
-  elseif ~isempty(localfile) && remotefile.datenum<localfile.datenum
-    fprintf('Local file is newer, not copying\n');
+    fprintf('No remote files found matching %s\n',remotefilename);
   else
-    if isempty(localfile)
-      file=[dname,'/',remotefile.name];
-    end
-    if args.copyfromserver
-      cmd=sprintf('cp -p "%s" .',[dname,'/',remotefile.name]);
-      fprintf('Executing <%s> ...',cmd);
-      [s,r]=system(cmd);
-      if s~=0
-        error(r);
-      else
-        fprintf('done\n');
+    [~,ord]=sort(datenum({remotefile.date}));
+    remotefile=remotefile(ord(end));
+    fprintf('Remote file: %s\n',remotefilename);
+    if ~isempty(localfile) && remotefile.bytes==localfile.bytes
+      fprintf('Remote file has same size as localfile, not copying\n');
+    elseif ~isempty(localfile) && remotefile.datenum<localfile.datenum
+      fprintf('Local file is newer, not copying\n');
+    else
+      if isempty(localfile)
+        file=[dname,'/',remotefile.name];
+      end
+      if args.copyfromserver
+        cmd=sprintf('cp -p "%s" .',[dname,'/',remotefile.name]);
+        fprintf('Executing <%s> ...',cmd);
+        [s,r]=system(cmd);
+        if s~=0
+          error(r);
+        else
+          fprintf('done\n');
+        end
       end
     end
   end
