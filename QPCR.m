@@ -162,7 +162,7 @@ classdef QPCR < handle
     end
 
     function addref(obj,primer,refwells,refconcs,varargin)
-      defaults=struct('units','nM','length',[],'strands',[]);
+      defaults=struct('units','nM','length',[],'strands',[],'efficiency',[]);
       args=processargs(defaults,varargin);
 
       if isKey(obj.refs,primer)
@@ -234,7 +234,11 @@ classdef QPCR < handle
       obj.refs(primer)=struct('name',primer,'wells',refwlist(refconcs>0),'welldescr',{obj.getwellnames(refwlist(refconcs>0))},'ct',ct(refconcs>0),'concs',refconcs(refconcs>0),'units',args.units,'ctwater',ctwater,'samples',containers.Map(),'len',len,'dilution',dilution,'strands',strands);
       % samples will hold individual sample data
       if sum(concsel)>=1
-        if sum(concsel)==1
+        if ~isempty(args.efficiency)
+          fprintf('Forced efficiency to %.2f\n', args.efficiency);
+          fit(1)=-1/log(args.efficiency);
+          fit(2)=mean(ct(concsel)-fit(1)*log(refconcs(concsel)));
+        elseif sum(concsel)==1
           fprintf('Only 1 concentration point, assuming perfect efficiency\n');
           fit=polyfit(log(refconcs(concsel)*[1,0.5]),ct(concsel)+[0,1],1);	% Assume 2x
         else
