@@ -469,10 +469,12 @@ classdef QPCR < handle
       h(end+1)=semilogx(r.concs,r.ct,'or');	% References
       leg{end+1}='Reference';
       hold on;
-      wellnms=obj.getwellnames(r.wells);
-      for i=1:length(r.concs)
-        hh=text(r.concs(i)*1.05,r.ct(i),wellnms{i});
-        set(hh,'Color','red');
+      if ~isempty(r.wells)
+        wellnms=obj.getwellnames(r.wells);
+        for i=1:length(r.concs)
+          hh=text(r.concs(i)*1.05,r.ct(i),wellnms{i});
+          set(hh,'Color','red');
+        end
       end
       
       % Draw lines showing best point, confidence intervals
