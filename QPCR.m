@@ -145,6 +145,22 @@ classdef QPCR < handle
       ct=obj.ctgrid(wlist);
     end
     
+    function addmanualref(obj,primer,efficiency,ct10,varargin)
+      defaults=struct('units','nM','length',1,'strands',2,'ctlod',20,'dilution',1);
+      args=processargs(defaults,varargin);
+      obj.refs(primer)=struct('name',primer,'wells',[],'welldescr',{{}},'ct',10,'concs',ct10,'units',args.units,'ctwater',[],'samples',containers.Map(),'len',args.length,'dilution',args.dilution,'strands',args.strands);
+
+      ct0=ct10*efficiency^10;
+      fit(1)=-1/log(efficiency);
+      fit(2)=-log(ct0)*fit(1);
+
+      lod=ct0*efficiency^-args.ctlod;
+      fprintf('Primer %4s model:  efficiency=%4.2f, Conc(Ct=10)=%5.2f%s, Det Limit=%6.2g%s (@Ct=%.1f)\n', primer, efficiency, ct10, args.units,lod,args.units,args.ctlod);
+      tmp=obj.refs(primer);
+      tmp.mdl=struct('N',0, 'fit',fit,'conc',[],'ct',[],'concrange',[nan,nan],'eff',efficiency,'ct0',ct0,'ct10',ct10,'ctnoise',nan,'deviation',[],'ctlod',args.ctlod,'lod',lod,'sxloglod',nan);
+      obj.refs(primer)=tmp;
+    end
+
     function addref(obj,primer,refwells,refconcs,varargin)
       defaults=struct('units','nM','length',[],'strands',[]);
       args=processargs(defaults,varargin);
