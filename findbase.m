@@ -42,6 +42,9 @@ if isinf(beststd)
   fprintf('findbase: Warning: Unable to identify slope of base, using %.0f as baseline\n',bval);
   bestpoly=[0,bval];
   bestlast=max(find(x<bestbaseline));
+  if isempty(bestlast)
+    bestlast=length(x);
+  end
 end
 if bestpoly(1)>args.maxslope || bestpoly(1)<args.minslope
   fprintf('findbase: Warning: Baseline slope is %.2f; out of range [%.2f, %.2f]\n', bestpoly(1),args.minslope,args.maxslope);
