@@ -320,7 +320,7 @@ classdef QPCR < handle
     end
     
     function cmat=getconcmat(obj,ref,rep1,rep2,rep3,rep4,varargin)
-      defaults=struct('length',nan,'dilution',nan,'strands',[]);
+      defaults=struct('length',nan,'dilution',[],'strands',[]);
       args=processargs(defaults,varargin);
       if nargin<4; rep2=[]; end;
       if nargin<5; rep3=[]; end;
