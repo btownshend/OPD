@@ -155,7 +155,7 @@ classdef QPCR < handle
       fit(2)=-log(ct0)*fit(1);
 
       lod=ct0*efficiency^-args.ctlod;
-      fprintf('Primer %4s model:  efficiency=%4.2f, Conc(Ct=10)=%5.2f%s, Det Limit=%6.2g%s (@Ct=%.1f)\n', primer, efficiency, ct10, args.units,lod,args.units,args.ctlod);
+      fprintf('Primer %4s model:  efficiency=%4.2f, Conc(Ct=10)=%.3g%s, Det Limit=%6.2g%s (@Ct=%.1f)\n', primer, efficiency, ct10, args.units,lod,args.units,args.ctlod);
       tmp=obj.refs(primer);
       tmp.mdl=struct('N',0, 'fit',fit,'conc',[],'ct',[],'concrange',[nan,nan],'eff',efficiency,'ct0',ct0,'ct10',ct10,'ctnoise',nan,'deviation',[],'ctlod',args.ctlod,'lod',lod,'sxloglod',nan);
       obj.refs(primer)=tmp;
@@ -494,7 +494,7 @@ classdef QPCR < handle
         h(end+1)=plot(fitconc,fitct,'r');
         leg{end+1}='Linear Fit';
         if isfield(r.mdl,'eff') && isfield(r.mdl,'ct10')
-          ti=[ti,sprintf(' eff=%.2f, Conc(Ct=10)=%.2f%s, ctnoise=%.2f, det limit=%.2g%s', r.mdl.eff, r.mdl.ct10,r.units, r.mdl.ctnoise,r.mdl.lod,r.units)];
+          ti=[ti,sprintf(' eff=%.2f, Conc(Ct=10)=%.3g%s, ctnoise=%.2f, det limit=%.2g%s', r.mdl.eff, r.mdl.ct10,r.units, r.mdl.ctnoise,r.mdl.lod,r.units)];
         end
         c=axis;
         plot(r.mdl.lod*[1,1],c(3:4),':r');
