@@ -140,6 +140,9 @@ if args.doplot
   plot([c(1),c(2)],args.fuhigh*[1,1],':k');
   %c=axis; c(3)=args.fulow/10; axis(c);
   w=wellnames(opd);
+  if exist('sampsel','var')
+    w=w(sampsel);
+  end
   legend(w(~isfinite(ct)));
   
   if ~isempty(args.samps)
