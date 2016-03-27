@@ -1,6 +1,6 @@
 % Check out OPD data to see if it makes sense
 function opdcheck(v,samps,varargin)
-defaults=struct('firststage',false,'basecycles',[],'thresh',[]);
+defaults=struct('firststage',false,'basecycles',[],'thresh',[],'clf',true);
 args=processargs(defaults,varargin);
 wellnms=wellnames(v);
 if nargin<2
@@ -19,7 +19,9 @@ else
 end
   
 pnum=1;
-clf;
+if args.clf
+  clf;
+end
 for stage=1:length(v.stageavg)
   avg=v.stageavg{stage};
   delta=(avg.temp(end)-avg.temp(1))>1;
