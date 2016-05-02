@@ -1,10 +1,19 @@
 % Check out OPD data to see if it makes sense
 function opdcheck(v,samps,varargin)
-defaults=struct('firststage',false,'basecycles',[],'thresh',[],'clf',true);
+% showall - show even wells that appear to be empty/unused (default: false)
+defaults=struct('firststage',false,'basecycles',[],'thresh',[],'clf',true,'showall',false);
 args=processargs(defaults,varargin);
 wellnms=wellnames(v);
 if nargin<2
   sampsel=1:length(v.WIRT);
+  if ~args.showall
+    levdiff=squeeze(diff(v.avg.scaled([1,end],1,:)));
+    mindiff=max(levdiff)*0.1;
+    sampsel=intersect(sampsel,find(levdiff>mindiff));
+    if length(sampsel)<length(v.WIRT)
+      fprintf('Displaying only %d/%d wells that change by more than %.0f over course of run\n', length(sampsel), length(v.WIRT), mindiff);
+    end
+  end
 elseif iscell(samps)
   w=[];
   for i=1:length(samps)

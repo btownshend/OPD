@@ -1,10 +1,20 @@
 % Calculate the Ct's
 function opd=ctcalc(opd,varargin)
-defaults=struct('basecycles',2:8,'thresh',nan,'doplot',false,'debug',false,'samps',[],'maxcterror',0.4,'fulow',[],'fuhigh',[]);
+defaults=struct('basecycles',2:8,'thresh',nan,'doplot',false,'debug',false,'samps',[],'maxcterror',0.4,'fulow',[],'fuhigh',[],'showall',false);
 args=processargs(defaults,varargin);
 wellnms=wellnames(opd);
 if isempty(args.samps)
   fu=squeeze(opd.avg.scaled);
+  if ~args.showall
+    levdiff=squeeze(max(opd.avg.scaled(:,1,:))-min(opd.avg.scaled(:,1,:)));
+    mindiff=max(levdiff)*0.2;
+    sampsel=find(levdiff>mindiff);
+    if length(sampsel)<size(fu,2)
+      fprintf('Displaying only %d/%d wells that change by more than %.0f over course of run\n', length(sampsel), size(fu,2), mindiff);
+      fu=fu(:,sampsel);
+      wellnms=wellnms(sampsel);
+    end
+  end
 else
   w=[];
   for i=1:length(args.samps)
@@ -15,6 +25,7 @@ else
   end
   sampsel=w;
   fu=squeeze(opd.avg.scaled(:,:,sampsel));
+  wellnms=args.samps;
 end
 
 if isempty(args.fulow) || isnan(args.fulow)
@@ -98,7 +109,7 @@ end
 opd.ctgrid=nan(8,12);
 for j='A':'H'
   for i=1:12
-    ind=find(strcmp(w,sprintf('%c%d',j,i)));
+    ind=find(strcmp(wellnms,sprintf('%c%d',j,i)));
     if ~isempty(ind)
       opd.ctgrid(j-'A'+1,i)=ct(ind);
     end
@@ -139,18 +150,9 @@ if args.doplot
   plot([c(1),c(2)],args.fulow*[1,1],':k');
   plot([c(1),c(2)],args.fuhigh*[1,1],':k');
   %c=axis; c(3)=args.fulow/10; axis(c);
-  w=wellnames(opd);
-  if exist('sampsel','var')
-    w=w(sampsel);
-  end
-  legend(w(~isfinite(ct)));
-  
-  if ~isempty(args.samps)
-    w=args.samps;
-  end
-  % if length(w)==length(ct)
+  % if length(wellnms)==length(ct)
   %   for i=1:length(ct)
-  %     fprintf('%s\t%.2f\n',w{i},ct(i));
+  %     fprintf('%s\t%.2f\n',wellnms{i},ct(i));
   %   end
   % else
   %   for i=1:length(ct)
@@ -166,7 +168,7 @@ if args.doplot
   for j='A':'H'
     fprintf('%c ',j);
     for i=1:12
-      ind=find(strcmp(w,sprintf('%c%d',j,i)));
+      ind=find(strcmp(wellnms,sprintf('%c%d',j,i)));
       if isempty(ind)
         fprintf('       ');
       else
