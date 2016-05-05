@@ -5,16 +5,6 @@ args=processargs(defaults,varargin);
 wellnms=wellnames(opd);
 if isempty(args.samps)
   fu=squeeze(opd.avg.scaled);
-  if ~args.showall
-    levdiff=squeeze(max(opd.avg.scaled(:,1,:))-min(opd.avg.scaled(:,1,:)));
-    mindiff=max(levdiff)*0.2;
-    sampsel=find(levdiff>mindiff);
-    if length(sampsel)<size(fu,2)
-      fprintf('Displaying only %d/%d wells that change by more than %.0f over course of run\n', length(sampsel), size(fu,2), mindiff);
-      fu=fu(:,sampsel);
-      wellnms=wellnms(sampsel);
-    end
-  end
 else
   w=[];
   for i=1:length(args.samps)
@@ -134,7 +124,19 @@ if args.doplot
   subplot(312);
   semilogy(fu,'y');
   hold on;
-  semilogy(fu(:,~isfinite(ct)),'m');
+  
+  if ~args.showall
+    levdiff=max(fu)-min(fu);
+    mindiff=max(levdiff)*0.1;
+    fusel=levdiff>mindiff;
+    if sum(fusel)<length(fusel)
+      fprintf('Only displaying %d/%d traces that change by more than %.0f\n', sum(fusel), length(fusel), mindiff);
+    end
+  else
+    fusel=true(size(ct));
+  end
+
+  semilogy(fu(:,fusel&~isfinite(ct)),'m');
   semilogy(fuexp(:,isfinite(ct)),'.-');
   plot(ct,0*ct+args.thresh,'o');
   plot([c(1),c(2)],args.fulow*[1,1],':');
@@ -144,11 +146,14 @@ if args.doplot
   set(gca,'YLim',ylim);
   
   subplot(313);
-  failed=~isfinite(ct);
-  plot(fu(:,~isfinite(ct)));
+  failed=~isfinite(ct)&fusel;
+  plot(fu(:,failed));
   hold on;
   plot([c(1),c(2)],args.fulow*[1,1],':k');
   plot([c(1),c(2)],args.fuhigh*[1,1],':k');
+  if sum(failed)>0 && sum(failed)<20
+    legend(wellnms(failed));
+  end
   %c=axis; c(3)=args.fulow/10; axis(c);
   % if length(wellnms)==length(ct)
   %   for i=1:length(ct)
