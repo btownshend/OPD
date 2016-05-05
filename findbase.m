@@ -9,17 +9,21 @@ bestlast=nan;
 includeNext=false;
 for last=max(args.basecycles):length(x)-1
   poly=polyfit((min(args.basecycles):last)',x(min(args.basecycles):last),1);
-  if poly(1)>args.maxslope || poly(1)<args.minslope
-    if poly(1)>args.maxslope
-      xx=x-(1:length(x))'*args.maxslope;
-    else
-      xx=x-(1:length(x))'*args.minslope;
-    end
+  if poly(1)>args.maxslope
+    xx=x-(1:length(x))'*args.maxslope;
     intcpt=mean(xx(min(args.basecycles):last));
     if args.debug
       fprintf('Initial poly for range [%d,%d] was %.2fx + %.2f, reducing slope to %.2fx + %.2f\n', min(args.basecycles),last,poly,args.maxslope,intcpt);
     end
     poly=[args.maxslope,intcpt];
+  end
+  if poly(1)<args.minslope
+    xx=x-(1:length(x))'*args.minslope;
+    intcpt=mean(xx(min(args.basecycles):last));
+    if args.debug
+      fprintf('Initial poly for range [%d,%d] was %.2fx + %.2f, increasing slope to %.2fx + %.2f\n', min(args.basecycles),last,poly,args.minslope,intcpt);
+    end
+    poly=[args.minslope,intcpt];
   end
   baseline=polyval(poly,1:length(x))';
   delta=x-baseline;
