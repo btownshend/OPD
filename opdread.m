@@ -5,7 +5,7 @@
 % If 'copyfromserver' is set, and the file in server directory is newer or the local file doesn't exist, then
 %  copy from there
 function x=opdread(file,varargin)
-defaults=struct('copyfromserver',true);
+defaults=struct('copyfromserver',true,'remotedir',[]);
 args=processargs(defaults,varargin);
 if nargin<1 || isempty(file)
   file='Data *';
@@ -22,9 +22,8 @@ else
   fprintf('Found local file: %s\n', file);
 end
 
-dname='/Volumes/smolke-lab$/Brent';
-if exist(dname,'dir') && (isempty(localfile) || args.copyfromserver)
-  remotefilename=[dname,'/',file];
+if exist(args.remotedir,'dir') && (isempty(localfile) || args.copyfromserver)
+  remotefilename=[args.remotedir,'/',file];
   remotefile=dir(remotefilename);
   if length(remotefile)<1
     fprintf('No remote files found matching %s\n',remotefilename);
@@ -38,10 +37,10 @@ if exist(dname,'dir') && (isempty(localfile) || args.copyfromserver)
       fprintf('Local file is newer, not copying\n');
     else
       if isempty(localfile)
-        file=[dname,'/',remotefile.name];
+        file=[args.remotedir,'/',remotefile.name];
       end
       if args.copyfromserver
-        cmd=sprintf('cp -p "%s" .',[dname,'/',remotefile.name]);
+        cmd=sprintf('cp -p "%s" .',remotefilename);
         fprintf('Executing <%s> ...',cmd);
         [s,r]=system(cmd);
         if s~=0
@@ -54,8 +53,12 @@ if exist(dname,'dir') && (isempty(localfile) || args.copyfromserver)
   end
 end
 
-if isempty(localfile) && ~exist(dname)
-  error('Local file "%s" does not exist and smolke server not mounted\n',file);
+if isempty(localfile) && ~exist(args.remotedir)
+  if isempty(args.remotedir)
+    error('Local file "%s" does not exist and remotedir not specified.\n',file);
+  else
+    error('Local file "%s" does not exist and remote directory (%s) not mounted.\n',file, args.remotedir);
+  end
 end
 
 [fd,msg]=fopen(file,'r','ieee-le');
