@@ -26,7 +26,11 @@ if isempty(args.fulow) || isnan(args.fulow)
   end
 end
 if isempty(args.thresh) || isnan(args.thresh)
-  args.thresh=args.fulow*2;
+  if isempty(args.fuhigh) || isnan(args.fuhigh)
+    args.thresh=sqrt(args.fulow*2);
+  else
+    args.thresh=sqrt(args.fulow*args.fuhigh);
+  end
 end
 if isempty(args.fuhigh) || isnan(args.fuhigh)
   args.fuhigh=args.thresh*4;

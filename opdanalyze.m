@@ -49,7 +49,14 @@ for j=1:length(d)
   all.netfluor(i,filter,:)=(d(j).v(1,:)-d(j).v(2,:))*640/d(j).exposure;
   for k=1:size(all.netfluor,3)
     % Scale by well factor
-    all.wscaled(i,filter,k)=all.netfluor(i,filter,k)/v.WFFP(filter).val(k);
+    if v.WFFP(filter).val(k)<0.1
+      if i==1
+        fprintf('Very low well factor (%.2f) for well %d -- ignoring this well\n', v.WFFP(filter).val(k), k);
+      end
+      all.wscaled(i,filter,k)=nan;
+    else
+      all.wscaled(i,filter,k)=all.netfluor(i,filter,k)/v.WFFP(filter).val(k);
+    end
   end
   all.valid(i,filter)=d(j).validFlag;
   if d(j).rep ~= currep

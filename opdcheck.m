@@ -4,7 +4,7 @@ function opdcheck(v,samps,varargin)
 defaults=struct('firststage',false,'basecycles',[],'thresh',[],'clf',true,'showall',false);
 args=processargs(defaults,varargin);
 wellnms=wellnames(v);
-if nargin<2
+if nargin<2 || isempty(samps)
   sampsel=1:length(v.WIRT);
   if ~args.showall
     levdiff=squeeze(diff(v.avg.scaled([1,end],1,:)));

@@ -65,7 +65,8 @@ end
 if fd==-1
   error('Unable to open %s: %s',file,msg);
 end
-x=struct('filename',file);
+dfile=dir(file);
+x=struct('filename',dfile.name);
 gotWSRT=0;
 while 1
   [code,cnt]=fread(fd,4,'uint8=>char');

@@ -28,3 +28,4 @@ for i=1:8
 end
 
 colorbar
+title(['Well Factors - ',opd.filename]);

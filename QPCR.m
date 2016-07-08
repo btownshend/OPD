@@ -148,7 +148,7 @@ classdef QPCR < handle
     function addmanualref(obj,primer,efficiency,ct10,varargin)
       defaults=struct('units','nM','length',1,'strands',2,'ctlod',20,'dilution',1);
       args=processargs(defaults,varargin);
-      obj.refs(primer)=struct('name',primer,'wells',[],'welldescr',{{}},'ct',10,'concs',ct10,'units',args.units,'ctwater',[],'samples',containers.Map(),'len',args.length,'dilution',args.dilution,'strands',args.strands);
+      obj.refs(primer)=struct('name',primer,'wells',[],'welldescr',{{}},'ct',10,'concs',ct10,'units',args.units,'ctwater',args.ctlod,'samples',containers.Map(),'len',args.length,'dilution',args.dilution,'strands',args.strands);
 
       ct0=ct10*efficiency^10;
       fit(1)=-1/log(efficiency);
@@ -455,6 +455,7 @@ classdef QPCR < handle
         subplot(ny,nx,i);
         c=axis;
         c(1:2)=bnds(r.units);
+        c(1)=max(c(1),1e-9);
         c(4)=30;
         c(3)=5;
         axis(c);
