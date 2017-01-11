@@ -86,7 +86,6 @@ for stage=1:length(v.stageavg)
         c=axis;
         c(2)=c(2)+1.5;
         axis(c);
-        keyboard
       end
     end
   end
