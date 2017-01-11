@@ -80,6 +80,13 @@ for stage=1:length(v.stageavg)
     if stage==1
       if nargin>=2 || length(wellnms)<20
         legend(wellnms{sampsel},'Location','EastOutside');
+        for i=1:size(s,2)
+          text(avg.cycle(end)+0.5,s(end,i),wellnms{sampsel(i)});
+        end
+        c=axis;
+        c(2)=c(2)+1.5;
+        axis(c);
+        keyboard
       end
     end
   end
