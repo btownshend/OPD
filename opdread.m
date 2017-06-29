@@ -17,7 +17,7 @@ if length(localfile)<1
   fprintf('Data file "%s" not found in local directory, checking server...\n',file);
 elseif length(localfile)>1
   error('Multiple data files in local directory matching "%s"\n',file);
-else
+elseif isempty(localfile.folder)
   file=localfile.name;
   fprintf('Found local file: %s\n', file);
 end
