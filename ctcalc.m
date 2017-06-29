@@ -7,7 +7,7 @@ if isempty(args.samps)
   fu=squeeze(opd.avg.scaled);
 else
   w=[];
-  for i=1:length(args.samps)
+  for i=1:length(args.samps(:))
     f=find(strcmp(args.samps{i},wellnms));
     if ~isempty(f)
       w(end+1)=f;
@@ -120,8 +120,8 @@ if args.doplot
   plot([c(1),c(2)],args.fuhigh*[1,1],':');
   plot(args.basecycles(1)*[1,1],[c(3),c(4)],':');
   plot(args.basecycles(end)*[1,1],[c(3),c(4)],':');
-  if ~isempty(args.samps) && length(args.samps)<20
-    legend(args.samps,'Location','EastOutside');
+  if ~isempty(args.samps) && length(args.samps(:))<20
+    legend(args.samps(:),'Location','EastOutside');
   end
   title(opd.filename);
 
