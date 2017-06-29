@@ -70,7 +70,7 @@ classdef QPCR < handle
         obj.lengrid=args.lengrid;
       end
       if isempty(args.strandgrid)
-        obj.strandgrid=ones(size(ctgrid));
+        obj.strandgrid=nan(size(ctgrid));
       else
         assert(all(size(ctgrid)==size(args.strandgrid)));
         assert(all(args.strandgrid(:)==1 | args.strandgrid(:)==2 | isnan(args.strandgrid(:))));
@@ -180,6 +180,7 @@ classdef QPCR < handle
       if length(strands)>1
         error('Reference %s has multiple different strand counts specified by strandgrid\n',primer);
       end
+      fprintf('Reference %s has %d strands of DNA with maximum concentration of %.2f%s of molcules (=%.f%s of strands).\n', primer, strands, max(refconcs), args.units, max(refconcs)*strands,args.units);
       if ~isempty(args.length)
         obj.lengrid(refwlist)=args.length;
       end
@@ -392,6 +393,9 @@ classdef QPCR < handle
       w1=w1(:);
       if ~isempty(args.dilution)
         obj.dilgrid(w1)=args.dilution;
+      end
+      if ~isempty(args.strands)
+        obj.strandgrid(w1)=args.strands;
       end
       if ~isnan(args.length)
         obj.lengrid(w1)=args.length;
