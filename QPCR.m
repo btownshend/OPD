@@ -400,6 +400,16 @@ classdef QPCR < handle
       if ~isnan(args.length)
         obj.lengrid(w1)=args.length;
       end
+      if any(isnan(obj.dilgrid(w1)))
+        error('Dilution of some wells not specified\n');
+      end
+      if any(isnan(obj.strandgrid(w1)))
+        error('Number of strands of DNA in some wells not specified\n');
+      end
+      if any(isnan(obj.lengrid(w1)))
+        error('Length of DNA in some wells not specified\n');
+      end
+      
       conc=conc.*(obj.dilgrid(w1)/r.dilution)./(obj.lengrid(w1)/r.len)./(obj.strandgrid(w1)/r.strands);
       cilow=cilow.*(obj.dilgrid(w1)/r.dilution)./(obj.lengrid(w1)/r.len)./(obj.strandgrid(w1)/r.strands);
       cihigh=cihigh.*(obj.dilgrid(w1)/r.dilution)./(obj.lengrid(w1)/r.len)./(obj.strandgrid(w1)/r.strands);
