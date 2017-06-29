@@ -20,7 +20,7 @@ if iscell(wells)
   wells=w;
 end
 % Select melt cycles (assume it is the one with 100 or 200 repeats
-stage=v.PIFB.step(ismember([v.PIFB.step.repeat],[100,200])).cycle;
+stage=v.PIFB.step(ismember([v.PIFB.step.repeat],[100,150,200])).cycle;
 sel=(v.all.stage==stage);
 if sum(sel)<100
   fprintf('No melt data\n');
