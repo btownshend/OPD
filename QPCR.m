@@ -162,7 +162,7 @@ classdef QPCR < handle
     end
 
     function addref(obj,primer,refwells,refconcs,varargin)
-      defaults=struct('units','nM','length',[],'strands',[],'efficiency',[]);
+      defaults=struct('units','nM','length',[],'strands',[],'efficiency',[],'ctlod',[]);
       args=processargs(defaults,varargin);
 
       if isKey(obj.refs,primer)
@@ -214,7 +214,11 @@ classdef QPCR < handle
 
       % Compute limit of detection
       if isempty(ctwater)
-        ctlod=max([ct;19])+1;
+        if isempty(args.ctlod)
+          ctlod=max([ct;19])+1;
+        else
+          ctlod=args.ctlod;
+        end
         fprintf('Warning: Missing "water" sample(s) for primer %s -- assuming maximum CT of %.1f\n',primer,ctlod);
       elseif all(isnan(ctwater))
         ctlod=max([ct;19])+1;
