@@ -1,6 +1,6 @@
 % Calculate the Ct's
 function opd=ctcalc(opd,varargin)
-defaults=struct('basecycles',2:8,'thresh',nan,'doplot',false,'debug',false,'samps',[],'maxcterror',0.4,'fulow',[],'fuhigh',[],'showall',false);
+defaults=struct('basecycles',2:8,'thresh',nan,'doplot',false,'debug',false,'samps',[],'maxcterror',0.4,'fulow',[],'fuhigh',[],'showall',false,'maxeff',2.5);
 args=processargs(defaults,varargin);
 wellnms=wellnames(opd);
 if isempty(args.samps)
@@ -86,8 +86,8 @@ for i=1:size(fu,2)
     fprintf('Sample %s: baseline=%.2fx+%.1f [%d-%d], max=%.1f, estart=%d, elast=%d, fit=(%f,%f), ct=%.1f rmserr=%.1f\n', wellnms{i}, poly, min(args.basecycles),lastbaseline, max(fu(:,i)), estart, elast,fit,ct(i),rmserror);
   end
   eff=10^(1/fit(1));
-  if rmserror>args.maxcterror  || eff<1.3 || eff>2.5
-    fprintf('Bad fit: Sample %s: baseline=%.2fx+%.1f [%d-%d], max=%.1f, estart=%d, elast=%d, eff=%.2f, (acceptable is 1.3-2.5), ct=%.1f rmserr=%.1f (max=%.1f)\n', wellnms{i}, poly, min(args.basecycles), lastbaseline, max(fu(:,i)), estart, elast,eff,ct(i),rmserror,args.maxcterror);
+  if rmserror>args.maxcterror  || eff<1.3 || eff>args.maxeff
+    fprintf('Bad fit: Sample %s: baseline=%.2fx+%.1f [%d-%d], max=%.1f, estart=%d, elast=%d, eff=%.2f, (acceptable is 1.3-%.1f), ct=%.1f rmserr=%.1f (max=%.1f)\n', wellnms{i}, poly, min(args.basecycles), lastbaseline, max(fu(:,i)), estart, elast,eff,args.maxeff,ct(i),rmserror,args.maxcterror);
     ct(i)=nan;
   end
   opd.fit(i,:)=fit;
