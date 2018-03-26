@@ -1,6 +1,8 @@
 % Plot melt curves
-function [ut,sf,sfg]=opdmelt(v,wells)
-if nargin<2
+function [ut,sf,sfg]=opdmelt(v,wells,varargin)
+defaults=struct('gelplot',false,'wellnames',[]);
+args=processargs(defaults,varargin);
+if nargin<2 || isempty(wells)
   wells=1:size(v.all.scaled,3);
 end
 for i=1:length(v.WIRT)
@@ -18,6 +20,13 @@ if iscell(wells)
     end
   end
   wells=w;
+end
+if isempty(args.wellnames)
+  args.wellnames=wellnames(wells);
+elseif ~iscell(args.wellnames)
+  error('Wellnames arg must be a cell array of length %d',length(wells));
+elseif length(args.wellnames)~=length(wells)
+  error('Have %d wells, but %d well names',length(wells), length(args.wellnames));
 end
 % Select melt cycles (assume it is the one with 100 or 200 repeats
 stage=v.PIFB.step(ismember([v.PIFB.step.repeat],[100,150,200])).cycle;
@@ -67,13 +76,29 @@ for dye=1:size(v.all.scaled,2)
     sfgi(:,k)=spline(ut,sfg(:,k),alltemp);
   end
   %plot(ut,-sf,'-');
-  plot(alltemp,-sfgi,'-');
-  xlabel('Temperature');
-  ylabel('Fraction melting/deg');
-  title(sprintf('%s - %s',v.filename,v.WFFP(dye).dye));
-  %fprintf('Length(wells)=%d\n',length(wells));
-  if length(wellnames(wells))<=20
-    legend(wellnames{wells},'Location','NorthWest');
+  if args.gelplot
+    xx=sfgi;
+    xx(end+1,:)=nan;
+    xx(:,end+1)=nan;
+    pcolor(xx);
+    shading flat;
+    set(gca,'XTick',(1:length(args.wellnames))+0.5);
+    set(gca,'XTickLabel',args.wellnames);
+    set(gca,'XTickLabelRotation',45);
+    tvals=ceil(alltemp(1)/5)*5:5:alltemp(end);
+    tpos=interp1(alltemp,1:size(sfgi,1),tvals);
+    set(gca,'YTick',tpos);
+    set(gca,'YTickLabel',arrayfun(@(z) sprintf('%.0f',z),tvals,'UniformOutput',false));
+    ylabel('Temp (C)');
+  else
+    plot(alltemp,-sfgi,'-');
+    xlabel('Temperature');
+    ylabel('Fraction melting/deg');
+    %fprintf('Length(wells)=%d\n',length(wells));
+    if length(wellnames(wells))<=20
+      legend(wellnames{wells},'Location','NorthWest');
+    end
   end
+  title(sprintf('%s - %s',v.filename,v.WFFP(dye).dye));
 end
 
